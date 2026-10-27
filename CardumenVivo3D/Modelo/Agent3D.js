@@ -4,18 +4,18 @@ const BorderBehaviour = {
     NONE : "NONE"
 }
 
-class Agent2D {
+class Agent3D {
     static drawRatio = 5;
     static img;
-    constructor(x, y, mass) {
-        this.pos = createVector(x, y);
+    constructor(x, y, z, mass, depth) {
+        this.pos = createVector(x, y, z);
         this.lastPos = this.pos.copy();
-        this.speed = createVector(0, 0);
-        this.acc = createVector(0, 0);
+        this.speed = createVector(0, 0, 0);
+        this.acc = createVector(0, 0, 0);
         this.mass = mass < 0? 0 : mass;
         this.massLoss = 0;
         this.c = color(random(100, 255), 255, random(100, 255));
-        this.r = sqrt(this.mass / PI) * Agent2D.drawRatio;
+        this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
         this.borderBehaviour = BorderBehaviour.BORDERS;
         this.borderDamp = 0.8;
         this.maxSteeringForce = 0.01;
@@ -32,56 +32,66 @@ class Agent2D {
 
         this.separationRadius = 10;
         this.separationRatio = 1;
+
+        this.depth = depth;
     }
-    static createRandomSpeed(x, y, mass, massLoss) {
-        let agent = new Agent2D(x, y, mass, massLoss);
-        let v = p5.Vector.random2D();
+    static createRandomSpeed(x, y, z, mass, massLoss) {
+        let agent = new Agent3D(x, y, z, mass, massLoss);
+        let v = p5.Vector.random3D();
         agent.speed.add(v);
         return agent;
     }
     static createRandomPos(mass = 1) {
-        let agent = new Agent2D(random(width), random(height), mass);
+        let agent = new Agent3D(
+            random(-width / 2, width / 2),
+            random(-height / 2, height / 2),
+            random(-this.depth / 2, this.depth / 2),
+            mass);
         return agent;
     }
     update() {
         this.lastPos.x = this.pos.x;
         this.lastPos.y = this.pos.y;
+        this.lastPos.z = this.pos.z;
         this.speed.add(this.acc);
         this.speed.limit(this.maxSpeed);
         this.pos.add(this.speed);
         this.acc.mult(0);
         this.borders();
         this.mass -= this.massLoss;
-        this.r = sqrt(this.mass / PI) * Agent2D.drawRatio;
+        this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
     }
     display() {
-        stroke(this.c);
-        strokeWeight(this.r * 2)
+        noStroke();
+        fill(this.c);
         push();
-        translate(this.pos.x, this.pos.y);
-        rotate(this.speed.heading());
-        beginShape();
-        vertex(-this.r/3, -this.r/2);
-        vertex(-this.r/3, this.r/2);
-        vertex(3 * this.r/3, 0);
-        endShape(CLOSE);
+        translate(this.pos.x, this.pos.y, this.pos.z);
+        sphere(this.r);
         pop();
     }
     borders() {
+        let w = width / 2;
+        let h = height / 2;
+        let d = this.depth / 2;
         switch (this.borderBehaviour) {
             case BorderBehaviour.BORDERS:
-                if (this.pos.x < this.r || this.pos.x > width - this.r)
+                if (this.pos.x < -w + this.r || this.pos.x > w - this.r)
                     this.speed.x *= -this.borderDamp;
-                if (this.pos.y < this.r || this.pos.y > height - this.r)
+                if (this.pos.y < -h + this.r || this.pos.y > h - this.r)
                     this.speed.y *= -this.borderDamp;
-                this.pos.x = constrain(this.pos.x, this.r, width - this.r);
-                this.pos.y = constrain(this.pos.y, this.r, height - this.r);
+                if (this.pos.z < -d + this.r || this.pos.z > d - this.r)
+                    this.speed.z *= -this.borderDamp;
+                this.pos.x = constrain(this.pos.x, -w + this.r, w - this.r);
+                this.pos.y = constrain(this.pos.y, -h + this.r, h - this.r);
+                this.pos.z = constrain(this.pos.z, -d + this.r, d - this.r);
                 break;
             case BorderBehaviour.WRAP:
-                if (this.pos.x > width + this.r) this.pos.x = -this.r;
-                if (this.pos.x < -this.r) this.pos.x = width + this.r;
-                if (this.pos.y > height + this.r) this.pos.y = -this.r;
-                if (this.pos.y < -this.r) this.pos.y = height + this.r;
+                if (this.pos.x > w + this.r) this.pos.x = -w - this.r;
+                if (this.pos.x < -w - this.r) this.pos.x = w + this.r;
+                if (this.pos.y > h + this.r) this.pos.y = -h - this.r;
+                if (this.pos.y < -h - this.r) this.pos.y = h + this.r;
+                if (this.pos.z > d + this.r) this.pos.z = -d - this.r;
+                if (this.pos.z < -d - this.r) this.pos.z = d + this.r;
                 break;
             case BorderBehaviour.NONE:
                 break;
@@ -127,9 +137,9 @@ class Agent2D {
     wander() {
         let future = this.speed.copy();
         future.setMag(this.wanderLookAhead);
-        let r = this.speed.copy();
-        r.setMag(this.wanderRadius);
-        r.rotate(map(noise(this.wanderNoiseT), 0, 1, -PI, PI));
+        let theta = map(noise(this.wanderNoiseT), 0, 1, 0, PI);
+        let phi = map(noise(this.wanderNoiseT + 1000), 0, 1, -PI, PI);
+        let r = p5.Vector.fromAngles(theta, phi, this.wanderRadius);
         this.wanderDebug(future, r);
         this.wanderNoiseT += this.wanderNoiseInc;
         r.add(future);
@@ -141,16 +151,16 @@ class Agent2D {
         stroke(255);
         strokeWeight(1);
         noFill();
-        translate(this.pos.x, this.pos.y);
-        line(0, 0, future.x, future.y);
-        translate(future.x, future.y);
+        translate(this.pos.x, this.pos.y, this.pos.z);
+        line(0, 0, 0, future.x, future.y, future.z);
+        translate(future.x, future.y, future.z);
         ellipse(0, 0, r.mag() * 2);
-        translate(r.x, r.y);
+        translate(r.x, r.y, r.z);
         ellipse(0, 0, 5);
-        pop();     
+        pop();
     }
     align(agents) {
-        let result = createVector(0, 0);
+        let result = createVector(0, 0, 0);
         let n = 0;
         for (let a of agents) {
             if (this != a && this.pos.dist(a.pos) <= this.alignmentRadius) {
@@ -166,7 +176,7 @@ class Agent2D {
         }
     }
     separate(agents) {
-        let result = createVector(0, 0);
+        let result = createVector(0, 0, 0);
         let n = 0;
         for (let a of agents) {
             if (this != a && this.pos.dist(a.pos) <= this.separationRadius) {
