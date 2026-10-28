@@ -26,3 +26,6 @@ class Pez extends Agent3D {
         DibujadorPez.display(this.esDepredador, this);
     }
 }
+
+
+

@@ -33,23 +33,12 @@ class Agent3D {
         this.alignmentRatio = 1;
 
         this.separationRadius = 70; 
-        this.separationRatio = 1; 
+        this.separationRatio = 0.5; 
 
         this.cohesionRadius = 150;
         this.cohesionRatio = 1;
-
-
-        
-        let escalaVisual = this.r * 0.1; 
-
-        
-                this.modeloVisual = new Pez({ 
-                    tamaño: escalaVisual,
-                    colorCuerpo: color(random(100, 255), 200, 255), 
-                    colorAletas: color(50, 150, 200)
-                });
-        
     }
+
     static createRandomSpeed(x, y, z, mass, massLoss) {
         let agent = new Agent3D(x, y, z, mass, massLoss);
         let v = p5.Vector.random3D();
@@ -76,24 +65,15 @@ class Agent3D {
         this.mass -= this.massLoss;
         this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
     }
+    // Representación básica para instancias de Agent3D.
+    // Pez sobrescribe este método y delega en DibujadorPez.
     display() {
-        this.modeloVisual.posicion.set(this.pos);
-        
-        this.modeloVisual.orientar(this.speed);
-        
-        let deltaTime = 1.0 / 60.0;
-        this.modeloVisual.actualizar(deltaTime);
-
-        this.modeloVisual.display();
-
-        /* 
+        push();
         noStroke();
         fill(255, 0, 0, 50);
-        push();
         translate(this.pos.x, this.pos.y, this.pos.z);
         sphere(this.r);
         pop();
-        */
     }
     borders() {
         let w = width / 2;

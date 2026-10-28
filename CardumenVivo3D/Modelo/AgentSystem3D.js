@@ -74,11 +74,13 @@ class AgentSystem3D {
             let y = centroY + random(-30, 30);
             let z = centroZ + random(-30, 30);
 
-            let agent = new Agent3D(x, y, z, mass, this.depth);
+            let pez = new Pez(x, y, z, mass, this.depth, {
+                colorCuerpo: color(random(100, 255), 200, 255),
+                colorAletas: color(50, 150, 200)
+            });
             
-            agent.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
-            
-            this.agents.push(agent);
+            pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
+            this.agents.push(pez);
         }
     }
 }
