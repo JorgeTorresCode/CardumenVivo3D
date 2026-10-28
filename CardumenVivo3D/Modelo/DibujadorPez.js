@@ -13,12 +13,18 @@ class DibujadorPez {
     }
 
     static aplicarTransformacion(pez) {
-        const direccion = pez.speed.magSq() > 0.000001
-            ? pez.speed : pez.direccionAnterior;
+        if (pez.speed.magSq() > 0.000001) {
+            pez.direccionAnterior = pez.speed.copy();
+        }
+        const {x, y, z} = pez.direccionAnterior;
+        const horizontal = Math.hypot(x, z);
+        const giroHorizontal = createVector(x, -z).heading();
+        const inclinacion = createVector(horizontal, y).heading();
+
         translate(pez.pos.x, pez.pos.y, pez.pos.z);
-        const horizontal = Math.hypot(direccion.x, direccion.z);
-        rotateY(Math.atan2(-direccion.z, direccion.x));
-        rotateZ(Math.atan2(direccion.y, horizontal));
+        rotateY(giroHorizontal);
+        rotateZ(inclinacion);
+        
         scale(pez.tamano * pez.r / 38);
         noStroke();
     }
