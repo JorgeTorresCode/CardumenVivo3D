@@ -33,6 +33,9 @@ class Agent3D {
         this.separationRadius = 10;
         this.separationRatio = 1;
 
+
+        this.cohesionRadius = 100;
+        this.cohesionRatio = 1;
         this.depth = depth;
     }
     static createRandomSpeed(x, y, z, mass, massLoss) {
@@ -140,7 +143,7 @@ class Agent3D {
         let theta = map(noise(this.wanderNoiseT), 0, 1, 0, PI);
         let phi = map(noise(this.wanderNoiseT + 1000), 0, 1, -PI, PI);
         let r = p5.Vector.fromAngles(theta, phi, this.wanderRadius);
-        this.wanderDebug(future, r);
+        //this.wanderDebug(future, r);
         this.wanderNoiseT += this.wanderNoiseInc;
         r.add(future);
         r.add(this.pos);
@@ -190,6 +193,25 @@ class Agent3D {
         if (n > 0) {
             result.div(n);
             result.mult(this.separationRatio);
+            result.limit(this.maxSteeringForce);
+            this.addForce(result);
+        }
+    }
+
+    cohere(agents) {
+        let result = createVector(0, 0, 0); 
+        let n = 0;
+        for (let a of agents) {
+            let d = p5.Vector.dist(this.pos, a.pos);
+            if (this != a && d <= this.cohesionRadius) {
+                result.add(a.pos);
+                n++;
+            }
+        }
+        if (n > 0) {
+            result.div(n);
+            result.sub(this.pos);
+            result.setMag(this.cohesionRatio);
             result.limit(this.maxSteeringForce);
             this.addForce(result);
         }
