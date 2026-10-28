@@ -39,14 +39,14 @@ class Agent3D {
         this.cohesionRatio = 1;
     }
 
-    static createRandomSpeed(x, y, z, mass = 1, massLoss = 0, depth = 1200, opciones = {}) {
+    static createRandomSpeed(x, y, z, mass, massLoss, depth,  opciones = {}) {
         let agent = new this(x, y, z, mass, depth, opciones);
         agent.massLoss = massLoss;
         let v = p5.Vector.random3D();
         agent.speed.add(v);
         return agent;
     }
-    static createRandomPos(mass = 1, ancho = 1200, alto = 700, depth = 1200, opciones = {}) {
+    static createRandomPos(mass, ancho, alto, depth, opciones = {}) {
         let agent = new this(
             random(-ancho / 2, ancho / 2),
             random(-alto / 2, alto / 2),
@@ -66,8 +66,7 @@ class Agent3D {
         this.mass -= this.massLoss;
         this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
     }
-    // Representación básica para instancias de Agent3D.
-    // Pez sobrescribe este método y delega en DibujadorPez.
+    
     display() {
         push();
         noStroke();
@@ -76,7 +75,7 @@ class Agent3D {
         sphere(this.r);
         pop();
     }
-    borders(ancho = 1200, alto = 700, profundidad = this.depth) {
+    borders(ancho, alto, profundidad = this.depth) {
         let w = ancho / 2;
         let h = alto / 2;
         let d = profundidad / 2;

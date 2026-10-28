@@ -1,18 +1,18 @@
 class DibujadorPez {
     static display(esDepredador, pez) {
         push();
-        this._aplicarTransformacion(pez);
-        this._dibujarCuerpo(pez);
-        this._dibujarCola(pez);
-        this._dibujarOjos(pez);
+        this.aplicarTransformacion(pez);
+        this.dibujarCuerpo(pez);
+        this.dibujarCola(pez);
+        this.dibujarOjos(pez);
         if (esDepredador) {
-            this._dibujarAletaDorsal(pez);
-            this._dibujarAletasLaterales(pez);
+            this.dibujarAletaDorsal(pez);
+            this.dibujarAletasLaterales(pez);
         }
         pop();
     }
 
-    static _aplicarTransformacion(pez) {
+    static aplicarTransformacion(pez) {
         const direccion = pez.speed.magSq() > 0.000001
             ? pez.speed : pez.direccionAnterior;
         translate(pez.pos.x, pez.pos.y, pez.pos.z);
@@ -23,12 +23,12 @@ class DibujadorPez {
         noStroke();
     }
 
-    static _dibujarCuerpo(pez) {
+    static dibujarCuerpo(pez) {
         ambientMaterial(pez.color);
         ellipsoid(38, 18, 14, 24, 16);
     }
 
-    static _dibujarCola(pez) {
+    static dibujarCola(pez) {
         const frecuencia = 2.2; 
         const amplitud = 0.45; 
         const fase = (pez.tiempoCola * Math.PI * 2 * frecuencia) % (Math.PI * 2);
@@ -36,11 +36,11 @@ class DibujadorPez {
         translate(-34, 0, 0);
         rotateY(Math.sin(fase) * amplitud);
         ambientMaterial(pez.color);
-        this._dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]]);
+        this.dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]]);
         pop();
     }
 
-    static _dibujarOjos(pez) {
+    static dibujarOjos(pez) {
         ambientMaterial(pez.color);
         for (const lado of [-1, 1]) {
             push();
@@ -52,18 +52,18 @@ class DibujadorPez {
         }
     }
 
-    static _dibujarAletaDorsal(pez) {
+    static dibujarAletaDorsal(pez) {
         ambientMaterial(pez.color);
-        this._dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]]);
+        this.dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]]);
     }
 
-    static _dibujarAletasLaterales(pez) {
+    static dibujarAletasLaterales(pez) {
         ambientMaterial(pez.color);
-        this._dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]]);
-        this._dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]]);
+        this.dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]]);
+        this.dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]]);
     }
 
-    static _dibujarAleta(puntos, grosor = 0.5) {
+    static dibujarAleta(puntos, grosor = 0.5) {
         const triangulo = puntos.map(([x, y, z]) => createVector(x, y, z));
         const borde1 = p5.Vector.sub(triangulo[1], triangulo[0]);
         const borde2 = p5.Vector.sub(triangulo[2], triangulo[0]);

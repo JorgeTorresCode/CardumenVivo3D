@@ -66,12 +66,12 @@ class AgentSystem3D {
     }
 
     addMinibanco(count, mass) {
-        const dispersionX = Math.min(30, this.ancho / 4);
-        const dispersionY = Math.min(30, this.alto / 4);
-        const dispersionZ = Math.min(30, this.depth / 4);
-        const margenX = Math.min(150, this.ancho / 2 - dispersionX);
-        const margenY = Math.min(100, this.alto / 2 - dispersionY);
-        const margenZ = Math.min(150, this.depth / 2 - dispersionZ);
+        let dispersionX = Math.min(30, this.ancho / 4);
+        let dispersionY = Math.min(30, this.alto / 4);
+        let dispersionZ = Math.min(30, this.depth / 4);
+        let margenX = Math.min(150, this.ancho / 2 - dispersionX);
+        let margenY = Math.min(100, this.alto / 2 - dispersionY);
+        let margenZ = Math.min(150, this.depth / 2 - dispersionZ);
         let centroX = random(-margenX, margenX);
         let centroY = random(-margenY, margenY);
         let centroZ = random(-margenZ, margenZ);
