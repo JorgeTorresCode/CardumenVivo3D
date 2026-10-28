@@ -1,6 +1,4 @@
-/** Dibujo WEBGL. El frente del modelo es +X y arriba es -Y. */
 class DibujadorPez {
-    // Fachada: coordina las partes, sin modificar el estado físico del pez.
     static display(esDepredador, pez) {
         push();
         this._aplicarTransformacion(pez);
@@ -15,14 +13,12 @@ class DibujadorPez {
     }
 
     static _aplicarTransformacion(pez) {
-        // Una velocidad casi nula conserva la última orientación visual.
         const direccion = pez.speed.magSq() > 0.000001
             ? pez.speed : pez.direccionAnterior;
         translate(pez.pos.x, pez.pos.y, pez.pos.z);
         const horizontal = Math.hypot(direccion.x, direccion.z);
         rotateY(Math.atan2(-direccion.z, direccion.x));
         rotateZ(Math.atan2(direccion.y, horizontal));
-        // El semieje mayor del cuerpo mide 38: se escala al radio del agente.
         scale(pez.tamano * pez.r / 38);
         noStroke();
     }
@@ -33,8 +29,8 @@ class DibujadorPez {
     }
 
     static _dibujarCola(pez) {
-        const frecuencia = 2.2; // Ciclos por segundo, igual al aleteo original.
-        const amplitud = 0.45; // Radianes.
+        const frecuencia = 2.2; 
+        const amplitud = 0.45; 
         const fase = (pez.tiempoCola * Math.PI * 2 * frecuencia) % (Math.PI * 2);
         push();
         translate(-34, 0, 0);
@@ -68,7 +64,6 @@ class DibujadorPez {
         this._dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]]);
     }
 
-    // Prisma triangular compartido por la cola y las aletas adicionales.
     static _dibujarAleta(puntos, grosor = 0.5) {
         const triangulo = puntos.map(([x, y, z]) => createVector(x, y, z));
         const borde1 = p5.Vector.sub(triangulo[1], triangulo[0]);
