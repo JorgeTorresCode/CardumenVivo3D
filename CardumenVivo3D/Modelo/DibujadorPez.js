@@ -4,7 +4,7 @@ class DibujadorPez {
         this._aplicarTransformacion(pez);
         this._dibujarCuerpo(pez);
         this._dibujarCola(pez);
-        this._dibujarOjos();
+        this._dibujarOjos(pez);
         if (esDepredador) {
             this._dibujarAletaDorsal(pez);
             this._dibujarAletasLaterales(pez);
@@ -24,7 +24,7 @@ class DibujadorPez {
     }
 
     static _dibujarCuerpo(pez) {
-        ambientMaterial(pez.colorCuerpo);
+        ambientMaterial(pez.color);
         ellipsoid(38, 18, 14, 24, 16);
     }
 
@@ -35,31 +35,30 @@ class DibujadorPez {
         push();
         translate(-34, 0, 0);
         rotateY(Math.sin(fase) * amplitud);
-        ambientMaterial(pez.colorAletas);
+        ambientMaterial(pez.color);
         this._dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]]);
         pop();
     }
 
-    static _dibujarOjos() {
+    static _dibujarOjos(pez) {
+        ambientMaterial(pez.color);
         for (const lado of [-1, 1]) {
             push();
             translate(23, -5, lado * 10.5);
-            ambientMaterial('#fff8e9');
             sphere(3.8, 10, 8);
             translate(1.1, 0, lado * 2.6);
-            ambientMaterial('#172a33');
             sphere(1.9, 8, 6);
             pop();
         }
     }
 
     static _dibujarAletaDorsal(pez) {
-        ambientMaterial(pez.colorAletas);
+        ambientMaterial(pez.color);
         this._dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]]);
     }
 
     static _dibujarAletasLaterales(pez) {
-        ambientMaterial(pez.colorAletas);
+        ambientMaterial(pez.color);
         this._dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]]);
         this._dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]]);
     }

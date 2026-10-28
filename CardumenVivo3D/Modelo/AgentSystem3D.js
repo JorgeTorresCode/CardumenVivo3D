@@ -1,7 +1,10 @@
 class AgentSystem3D {
-    constructor(depth = 1200) {
+    // Se conserva depth como primer argumento para las llamadas existentes.
+    constructor(depth = 1200, ancho = 1200, alto = 700) {
         this.agents = [];
         this.depth = depth;
+        this.ancho = ancho;
+        this.alto = alto;
     }
 
     cohere() {
@@ -29,6 +32,11 @@ class AgentSystem3D {
     }
 
     update() {
+        const dimensiones = {
+            ancho: this.ancho,
+            alto: this.alto,
+            profundidad: this.depth,
+        };
         for (let i = this.agents.length - 1; i >= 0; i--) {
             let a = this.agents[i];
             
@@ -37,23 +45,19 @@ class AgentSystem3D {
                 continue;
             }
 
-            a.update();
+            a.update(dimensiones);
             a.display();
         }
     }
 
-    addRandomAgents(count, mass = 15) {
-        let w = 1200 / 2; 
-        let h = 700 / 2;  
-        let d = this.depth / 2;
-
+    addRandomAgents(count, mass = 15, opcionesPez = {}) {
         for (let i = 0; i < count; i++) {
-            let agent = new Agent3D(
-                random(-w, w),
-                random(-h, h),
-                random(-d, d),
+            let agent = Pez.createRandomPos(
                 mass,
-                this.depth
+                this.ancho,
+                this.alto,
+                this.depth,
+                opcionesPez
             );
             agent.speed = p5.Vector.random3D();
             agent.speed.mult(random(1, agent.maxSpeed));
@@ -61,22 +65,28 @@ class AgentSystem3D {
         }
     }
 
-    addMinibanco(count, mass = 15) {
-        let centroX = random(-150, 150);
-        let centroY = random(-100, 100);
-        let centroZ = random(-150, 150);
+    addMinibanco(count, mass = 15, opcionesPez = {}) {
+        // Ajustar el grupo a acuarios menores sin generar centros fuera del volumen.
+        const dispersionX = Math.min(30, this.ancho / 4);
+        const dispersionY = Math.min(30, this.alto / 4);
+        const dispersionZ = Math.min(30, this.depth / 4);
+        const margenX = Math.min(150, this.ancho / 2 - dispersionX);
+        const margenY = Math.min(100, this.alto / 2 - dispersionY);
+        const margenZ = Math.min(150, this.depth / 2 - dispersionZ);
+        let centroX = random(-margenX, margenX);
+        let centroY = random(-margenY, margenY);
+        let centroZ = random(-margenZ, margenZ);
         
         let velocidadBase = p5.Vector.random3D();
         velocidadBase.mult(2);
 
         for (let i = 0; i < count; i++) {
-            let x = centroX + random(-30, 30);
-            let y = centroY + random(-30, 30);
-            let z = centroZ + random(-30, 30);
+            let x = centroX + random(-dispersionX, dispersionX);
+            let y = centroY + random(-dispersionY, dispersionY);
+            let z = centroZ + random(-dispersionZ, dispersionZ);
 
             let pez = new Pez(x, y, z, mass, this.depth, {
-                colorCuerpo: color(random(100, 255), 200, 255),
-                colorAletas: color(50, 150, 200)
+                ...opcionesPez
             });
             
             pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));

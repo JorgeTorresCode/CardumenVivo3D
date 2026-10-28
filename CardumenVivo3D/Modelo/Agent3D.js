@@ -39,21 +39,22 @@ class Agent3D {
         this.cohesionRatio = 1;
     }
 
-    static createRandomSpeed(x, y, z, mass, massLoss) {
-        let agent = new Agent3D(x, y, z, mass, massLoss);
+    static createRandomSpeed(x, y, z, mass = 1, massLoss = 0, depth = 1200, opciones = {}) {
+        let agent = new this(x, y, z, mass, depth, opciones);
+        agent.massLoss = massLoss;
         let v = p5.Vector.random3D();
         agent.speed.add(v);
         return agent;
     }
-    static createRandomPos(mass = 1) {
-        let agent = new Agent3D(
-            random(-width / 2, width / 2),
-            random(-height / 2, height / 2),
-            random(-this.depth / 2, this.depth / 2),
-            mass);
+    static createRandomPos(mass = 1, ancho = 1200, alto = 700, depth = 1200, opciones = {}) {
+        let agent = new this(
+            random(-ancho / 2, ancho / 2),
+            random(-alto / 2, alto / 2),
+            random(-depth / 2, depth / 2),
+            mass, depth, opciones);
         return agent;
     }
-    update() {
+    update({ ancho = 1200, alto = 700, profundidad = this.depth } = {}) {
         this.lastPos.x = this.pos.x;
         this.lastPos.y = this.pos.y;
         this.lastPos.z = this.pos.z;
@@ -61,7 +62,7 @@ class Agent3D {
         this.speed.limit(this.maxSpeed);
         this.pos.add(this.speed);
         this.acc.mult(0);
-        this.borders();
+        this.borders(ancho, alto, profundidad);
         this.mass -= this.massLoss;
         this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
     }
@@ -75,10 +76,10 @@ class Agent3D {
         sphere(this.r);
         pop();
     }
-    borders() {
-        let w = width / 2;
-        let h = height / 2;
-        let d = this.depth / 2;
+    borders(ancho = 1200, alto = 700, profundidad = this.depth) {
+        let w = ancho / 2;
+        let h = alto / 2;
+        let d = profundidad / 2;
         switch (this.borderBehaviour) {
             case BorderBehaviour.BORDERS:
                 if (this.pos.x < -w + this.r || this.pos.x > w - this.r)

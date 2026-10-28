@@ -1,8 +1,8 @@
 let agentSystem;
 
 function setup() {
-    createCanvas(1200, 700, WEBGL);
-    agentSystem = new AgentSystem3D(2400);
+    createCanvas(windowWidth-5, windowHeight-5, WEBGL);
+    agentSystem = new AgentSystem3D(2400, 2400, 1200);
     
     agentSystem.addMinibanco(10, 15);
 }
@@ -16,7 +16,7 @@ function draw() {
     push();
     stroke(255, 100); 
     noFill();         
-    box(2400, 1200, 2400); 
+    box(agentSystem.ancho, agentSystem.alto, agentSystem.depth);
     pop();
     //
     agentSystem.cohere();
