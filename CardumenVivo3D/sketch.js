@@ -1,17 +1,24 @@
 let agentSystem;
 
 function setup() {
-    createCanvas(1200, 700, WEBGL); // Entorno 3D WebGL
-    agentSystem = new AgentSystem3D(1200); // Sandbox con profundidad de 1200
+    createCanvas(1200, 700, WEBGL);
+    agentSystem = new AgentSystem3D(2400);
     
-    // Agregamos un cardumen inicial de 30 peces de prueba
-    agentSystem.addRandomAgents(30, 15);
+    agentSystem.addMinibanco(10, 15);
 }
 
 function draw() {
-    background(20, 40, 60); 
+    background(20, 40, 60);
     orbitControl(); 
+    lights();
 
+    //sandbox
+    push();
+    stroke(255, 100); 
+    noFill();         
+    box(2400, 1200, 2400); 
+    pop();
+    //
     agentSystem.cohere();
     agentSystem.align();
     agentSystem.separate();

@@ -12,14 +12,16 @@ class Agent3D {
         this.lastPos = this.pos.copy();
         this.speed = createVector(0, 0, 0);
         this.acc = createVector(0, 0, 0);
-        this.mass = mass < 0? 0 : mass;
+        this.mass = mass < 0 ? 0 : mass;
         this.massLoss = 0;
-        this.c = color(random(100, 255), 255, random(100, 255));
+        
         this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
-        this.borderBehaviour = BorderBehaviour.BORDERS;
+        this.depth = depth;
+
+        this.borderBehaviour = BorderBehaviour.WRAP;
         this.borderDamp = 0.8;
-        this.maxSteeringForce = 0.01;
-        this.maxSpeed = 1;
+        this.maxSteeringForce = 0.03;
+        this.maxSpeed = 2;
         this.arrivalDist = 200;
 
         this.wanderLookAhead = 70;
@@ -30,13 +32,23 @@ class Agent3D {
         this.alignmentRadius = 100;
         this.alignmentRatio = 1;
 
-        this.separationRadius = 10;
-        this.separationRatio = 1;
+        this.separationRadius = 70; 
+        this.separationRatio = 1; 
 
-
-        this.cohesionRadius = 100;
+        this.cohesionRadius = 150;
         this.cohesionRatio = 1;
-        this.depth = depth;
+
+
+        
+        let escalaVisual = this.r * 0.1; 
+
+        
+                this.modeloVisual = new Pez({ 
+                    tamaño: escalaVisual,
+                    colorCuerpo: color(random(100, 255), 200, 255), 
+                    colorAletas: color(50, 150, 200)
+                });
+        
     }
     static createRandomSpeed(x, y, z, mass, massLoss) {
         let agent = new Agent3D(x, y, z, mass, massLoss);
@@ -65,12 +77,23 @@ class Agent3D {
         this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
     }
     display() {
+        this.modeloVisual.posicion.set(this.pos);
+        
+        this.modeloVisual.orientar(this.speed);
+        
+        let deltaTime = 1.0 / 60.0;
+        this.modeloVisual.actualizar(deltaTime);
+
+        this.modeloVisual.display();
+
+        /* 
         noStroke();
-        fill(this.c);
+        fill(255, 0, 0, 50);
         push();
         translate(this.pos.x, this.pos.y, this.pos.z);
         sphere(this.r);
         pop();
+        */
     }
     borders() {
         let w = width / 2;

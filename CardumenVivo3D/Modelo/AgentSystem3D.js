@@ -60,4 +60,25 @@ class AgentSystem3D {
             this.agents.push(agent);
         }
     }
+
+    addMinibanco(count, mass = 15) {
+        let centroX = random(-150, 150);
+        let centroY = random(-100, 100);
+        let centroZ = random(-150, 150);
+        
+        let velocidadBase = p5.Vector.random3D();
+        velocidadBase.mult(2);
+
+        for (let i = 0; i < count; i++) {
+            let x = centroX + random(-30, 30);
+            let y = centroY + random(-30, 30);
+            let z = centroZ + random(-30, 30);
+
+            let agent = new Agent3D(x, y, z, mass, this.depth);
+            
+            agent.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
+            
+            this.agents.push(agent);
+        }
+    }
 }
