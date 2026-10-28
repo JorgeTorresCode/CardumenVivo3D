@@ -1,6 +1,6 @@
 class AgentSystem3D {
     // Se conserva depth como primer argumento para las llamadas existentes.
-    constructor(depth = 1200, ancho = 1200, alto = 700) {
+    constructor(depth, ancho, alto) {
         this.agents = [];
         this.depth = depth;
         this.ancho = ancho;
@@ -50,7 +50,7 @@ class AgentSystem3D {
         }
     }
 
-    addRandomAgents(count, mass = 15, opcionesPez = {}) {
+    addRandomAgents(count, mass, opcionesPez) {
         for (let i = 0; i < count; i++) {
             let agent = Pez.createRandomPos(
                 mass,
@@ -65,8 +65,7 @@ class AgentSystem3D {
         }
     }
 
-    addMinibanco(count, mass = 15, opcionesPez = {}) {
-        // Ajustar el grupo a acuarios menores sin generar centros fuera del volumen.
+    addMinibanco(count, mass) {
         const dispersionX = Math.min(30, this.ancho / 4);
         const dispersionY = Math.min(30, this.alto / 4);
         const dispersionZ = Math.min(30, this.depth / 4);
@@ -86,7 +85,6 @@ class AgentSystem3D {
             let z = centroZ + random(-dispersionZ, dispersionZ);
 
             let pez = new Pez(x, y, z, mass, this.depth, {
-                ...opcionesPez
             });
             
             pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));

@@ -1,8 +1,8 @@
 class Pez extends Agent3D {
-    constructor(x, y, z, mass = 15, depth = 1200, {
+    constructor(x, y, z, mass, depth, {
         esDepredador = false,
         tamano = 1
-    } = {}) {
+    }) {
         super(x, y, z, mass, depth);
         this.esDepredador = esDepredador;
         this.tamano = tamano;
@@ -11,7 +11,7 @@ class Pez extends Agent3D {
         this.direccionAnterior = createVector(1, 0, 0);
     }
 
-    update(dimensiones = {}) {
+    update(dimensiones) {
         super.update(dimensiones);
         this.tiempoCola += Math.max(0, deltaTime / 1000);
         if (this.speed.magSq() > 0.000001) {
