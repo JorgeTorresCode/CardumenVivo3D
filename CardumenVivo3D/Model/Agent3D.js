@@ -1,5 +1,5 @@
 class Agent3D {
-    constructor(x, y, z, mass, depth) {
+    constructor(x, y, z, mass) {
         this.pos = createVector(x, y, z);
         this.lastPos = this.pos.copy();
         this.speed = createVector(0, 0, 0);
@@ -8,9 +8,7 @@ class Agent3D {
         this.massLoss = 0;
         
         this.r = Math.cbrt((3 * this.mass) / (4 * PI));
-        this.depth = depth;
 
-        this.borderBehaviour = BorderBehaviour.WRAP;
         this.borderDamp = 0.8;
         this.maxSteeringForce = 0.03;
         this.maxSpeed = 2;
@@ -31,8 +29,8 @@ class Agent3D {
         this.cohesionRatio = 1;
     }
 
-    static createRandomSpeed(x, y, z, mass, massLoss, depth, esDepredador, tamano) {
-        let agent = new this(x, y, z, mass, depth, esDepredador, tamano);
+    static createRandomSpeed(x, y, z, mass, massLoss, esDepredador, tamano) {
+        let agent = new this(x, y, z, mass, esDepredador, tamano);
         agent.massLoss = massLoss;
         let v = p5.Vector.random3D();
         agent.speed.add(v);
@@ -43,7 +41,7 @@ class Agent3D {
             random(-ancho / 2, ancho / 2),
             random(-alto / 2, alto / 2),
             random(-depth / 2, depth / 2),
-            mass, depth, esDepredador, tamano);
+            mass, esDepredador, tamano);
         return agent;
     }
     update(ancho, alto, profundidad) {

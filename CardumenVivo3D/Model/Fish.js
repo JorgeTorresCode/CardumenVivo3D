@@ -1,6 +1,6 @@
 class Fish extends Agent3D {
-    constructor(x, y, z, mass, depth, esDepredador, tamano) {
-        super(x, y, z, mass, depth);
+    constructor(x, y, z, mass, esDepredador, tamano) {
+        super(x, y, z, mass);
         this.esDepredador = esDepredador;
         this.tamano = tamano;
         this.color = color(random(20, 255), random(20, 255), random(20, 255));
@@ -20,4 +20,3 @@ class Fish extends Agent3D {
         FishDrawer.display(this.esDepredador, this);
     }
 }
-

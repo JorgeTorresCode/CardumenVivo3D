@@ -80,7 +80,7 @@ class FishSystem3D {
             let y = centroY + random(-dispersionY, dispersionY);
             let z = centroZ + random(-dispersionZ, dispersionZ);
 
-            let pez = new Fish(x, y, z, mass, this.depth, esDepredador, tamano);
+            let pez = new Fish(x, y, z, mass, esDepredador, tamano);
             
             pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
             this.agents.push(pez);
