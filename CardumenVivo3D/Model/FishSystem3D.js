@@ -1,4 +1,4 @@
-class AgentSystem3D {
+class FishSystem3D {
     // Se conserva depth como primer argumento para las llamadas existentes.
     constructor(depth, ancho, alto) {
         this.agents = [];
@@ -32,11 +32,6 @@ class AgentSystem3D {
     }
 
     update() {
-        const dimensiones = {
-            ancho: this.ancho,
-            alto: this.alto,
-            profundidad: this.depth,
-        };
         for (let i = this.agents.length - 1; i >= 0; i--) {
             let a = this.agents[i];
             
@@ -45,19 +40,20 @@ class AgentSystem3D {
                 continue;
             }
 
-            a.update(dimensiones);
+            a.update(this.ancho, this.alto, this.depth);
             a.display();
         }
     }
 
-    addRandomAgents(count, mass, opcionesPez) {
+    addRandomAgents(count, mass, esDepredador, tamano) {
         for (let i = 0; i < count; i++) {
-            let agent = Pez.createRandomPos(
+            let agent = Fish.createRandomPos(
                 mass,
                 this.ancho,
                 this.alto,
                 this.depth,
-                opcionesPez
+                esDepredador,
+                tamano
             );
             agent.speed = p5.Vector.random3D();
             agent.speed.mult(random(1, agent.maxSpeed));
@@ -65,7 +61,7 @@ class AgentSystem3D {
         }
     }
 
-    addMinibanco(count, mass) {
+    addMinibanco(count, mass, esDepredador, tamano) {
         let dispersionX = Math.min(30, this.ancho / 4);
         let dispersionY = Math.min(30, this.alto / 4);
         let dispersionZ = Math.min(30, this.depth / 4);
@@ -84,8 +80,7 @@ class AgentSystem3D {
             let y = centroY + random(-dispersionY, dispersionY);
             let z = centroZ + random(-dispersionZ, dispersionZ);
 
-            let pez = new Pez(x, y, z, mass, this.depth, {
-            });
+            let pez = new Fish(x, y, z, mass, this.depth, esDepredador, tamano);
             
             pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
             this.agents.push(pez);

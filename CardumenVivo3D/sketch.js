@@ -1,10 +1,10 @@
-let agentSystem;
+let fishSystem;
 
 function setup() {
     createCanvas(windowWidth-5, windowHeight-5, WEBGL);
-    agentSystem = new AgentSystem3D(2400, 2400, 1200);
+    fishSystem = new FishSystem3D(2400, 2400, 1200);
     
-    agentSystem.addMinibanco(10, 15);
+    fishSystem.addMinibanco(10, 15, false, 1);
 }
 
 function draw() {
@@ -16,13 +16,13 @@ function draw() {
     push();
     stroke(255, 100); 
     noFill();         
-    box(agentSystem.ancho, agentSystem.alto, agentSystem.depth);
+    box(fishSystem.ancho, fishSystem.alto, fishSystem.depth);
     pop();
     //
-    agentSystem.cohere();
-    agentSystem.align();
-    agentSystem.separate();
-    agentSystem.wander();
+    fishSystem.cohere();
+    fishSystem.align();
+    fishSystem.separate();
+    fishSystem.wander();
 
-    agentSystem.update();
+    fishSystem.update();
 }

@@ -1,12 +1,4 @@
-const BorderBehaviour = {
-    BORDERS : "BORDERS",
-    WRAP : "WRAP",
-    NONE : "NONE"
-}
-
 class Agent3D {
-    static drawRatio = 5;
-    static img;
     constructor(x, y, z, mass, depth) {
         this.pos = createVector(x, y, z);
         this.lastPos = this.pos.copy();
@@ -15,7 +7,7 @@ class Agent3D {
         this.mass = mass < 0 ? 0 : mass;
         this.massLoss = 0;
         
-        this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
+        this.r = Math.cbrt((3 * this.mass) / (4 * PI));
         this.depth = depth;
 
         this.borderBehaviour = BorderBehaviour.WRAP;
@@ -39,22 +31,22 @@ class Agent3D {
         this.cohesionRatio = 1;
     }
 
-    static createRandomSpeed(x, y, z, mass, massLoss, depth,  opciones = {}) {
-        let agent = new this(x, y, z, mass, depth, opciones);
+    static createRandomSpeed(x, y, z, mass, massLoss, depth, esDepredador, tamano) {
+        let agent = new this(x, y, z, mass, depth, esDepredador, tamano);
         agent.massLoss = massLoss;
         let v = p5.Vector.random3D();
         agent.speed.add(v);
         return agent;
     }
-    static createRandomPos(mass, ancho, alto, depth, opciones = {}) {
+    static createRandomPos(mass, ancho, alto, depth, esDepredador, tamano) {
         let agent = new this(
             random(-ancho / 2, ancho / 2),
             random(-alto / 2, alto / 2),
             random(-depth / 2, depth / 2),
-            mass, depth, opciones);
+            mass, depth, esDepredador, tamano);
         return agent;
     }
-    update({ ancho = 1200, alto = 700, profundidad = this.depth } = {}) {
+    update(ancho, alto, profundidad) {
         this.lastPos.x = this.pos.x;
         this.lastPos.y = this.pos.y;
         this.lastPos.z = this.pos.z;
@@ -64,7 +56,7 @@ class Agent3D {
         this.acc.mult(0);
         this.borders(ancho, alto, profundidad);
         this.mass -= this.massLoss;
-        this.r = Math.cbrt((3 * this.mass) / (4 * PI)) * Agent3D.drawRatio;
+        this.r = Math.cbrt((3 * this.mass) / (4 * PI));
     }
     
     display() {
@@ -75,7 +67,7 @@ class Agent3D {
         sphere(this.r);
         pop();
     }
-    borders(ancho, alto, profundidad = this.depth) {
+    borders(ancho, alto, profundidad) {
         let w = ancho / 2;
         let h = alto / 2;
         let d = profundidad / 2;

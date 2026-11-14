@@ -1,4 +1,4 @@
-class DibujadorPez {
+class FishDrawer {
     static display(esDepredador, pez) {
         push();
         this.aplicarTransformacion(pez);
@@ -42,7 +42,7 @@ class DibujadorPez {
         translate(-34, 0, 0);
         rotateY(Math.sin(fase) * amplitud);
         ambientMaterial(pez.color);
-        this.dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]]);
+        this.dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]], 0.5);
         pop();
     }
 
@@ -60,16 +60,16 @@ class DibujadorPez {
 
     static dibujarAletaDorsal(pez) {
         ambientMaterial(pez.color);
-        this.dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]]);
+        this.dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]], 0.5);
     }
 
     static dibujarAletasLaterales(pez) {
         ambientMaterial(pez.color);
-        this.dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]]);
-        this.dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]]);
+        this.dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]], 0.5);
+        this.dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]], 0.5);
     }
 
-    static dibujarAleta(puntos, grosor = 0.5) {
+    static dibujarAleta(puntos, grosor) {
         const triangulo = puntos.map(([x, y, z]) => createVector(x, y, z));
         const borde1 = p5.Vector.sub(triangulo[1], triangulo[0]);
         const borde2 = p5.Vector.sub(triangulo[2], triangulo[0]);
