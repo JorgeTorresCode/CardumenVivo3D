@@ -1,25 +1,19 @@
-const BorderBehaviour = {
-    BORDERS : "BORDERS",
-    WRAP : "WRAP",
-    NONE : "NONE"
-}
-
-class Agent2D {
-    static drawRatio = 5;
-    static img;
-    constructor(x, y, mass) {
-        this.pos = createVector(x, y);
+class Agent3D {
+    constructor(x, y, z, mass, depth) {
+        this.pos = createVector(x, y, z);
         this.lastPos = this.pos.copy();
-        this.speed = createVector(0, 0);
-        this.acc = createVector(0, 0);
-        this.mass = mass < 0? 0 : mass;
+        this.speed = createVector(0, 0, 0);
+        this.acc = createVector(0, 0, 0);
+        this.mass = mass < 0 ? 0 : mass;
         this.massLoss = 0;
-        this.c = color(random(100, 255), 255, random(100, 255));
-        this.r = sqrt(this.mass / PI) * Agent2D.drawRatio;
-        this.borderBehaviour = BorderBehaviour.BORDERS;
+        
+        this.r = Math.cbrt((3 * this.mass) / (4 * PI));
+        this.depth = depth;
+
+        this.borderBehaviour = BorderBehaviour.WRAP;
         this.borderDamp = 0.8;
-        this.maxSteeringForce = 0.01;
-        this.maxSpeed = 1;
+        this.maxSteeringForce = 0.03;
+        this.maxSpeed = 2;
         this.arrivalDist = 200;
 
         this.wanderLookAhead = 70;
@@ -30,58 +24,72 @@ class Agent2D {
         this.alignmentRadius = 100;
         this.alignmentRatio = 1;
 
-        this.separationRadius = 10;
-        this.separationRatio = 1;
+        this.separationRadius = 70; 
+        this.separationRatio = 0.5; 
+
+        this.cohesionRadius = 150;
+        this.cohesionRatio = 1;
     }
-    static createRandomSpeed(x, y, mass, massLoss) {
-        let agent = new Agent2D(x, y, mass, massLoss);
-        let v = p5.Vector.random2D();
+
+    static createRandomSpeed(x, y, z, mass, massLoss, depth, esDepredador, tamano) {
+        let agent = new this(x, y, z, mass, depth, esDepredador, tamano);
+        agent.massLoss = massLoss;
+        let v = p5.Vector.random3D();
         agent.speed.add(v);
         return agent;
     }
-    static createRandomPos(mass = 1) {
-        let agent = new Agent2D(random(width), random(height), mass);
+    static createRandomPos(mass, ancho, alto, depth, esDepredador, tamano) {
+        let agent = new this(
+            random(-ancho / 2, ancho / 2),
+            random(-alto / 2, alto / 2),
+            random(-depth / 2, depth / 2),
+            mass, depth, esDepredador, tamano);
         return agent;
     }
-    update() {
+    update(ancho, alto, profundidad) {
         this.lastPos.x = this.pos.x;
         this.lastPos.y = this.pos.y;
+        this.lastPos.z = this.pos.z;
         this.speed.add(this.acc);
         this.speed.limit(this.maxSpeed);
         this.pos.add(this.speed);
         this.acc.mult(0);
-        this.borders();
+        this.borders(ancho, alto, profundidad);
         this.mass -= this.massLoss;
-        this.r = sqrt(this.mass / PI) * Agent2D.drawRatio;
+        this.r = Math.cbrt((3 * this.mass) / (4 * PI));
     }
+    
     display() {
-        stroke(this.c);
-        strokeWeight(this.r * 2)
         push();
-        translate(this.pos.x, this.pos.y);
-        rotate(this.speed.heading());
-        beginShape();
-        vertex(-this.r/3, -this.r/2);
-        vertex(-this.r/3, this.r/2);
-        vertex(3 * this.r/3, 0);
-        endShape(CLOSE);
+        noStroke();
+        fill(255, 0, 0, 50);
+        translate(this.pos.x, this.pos.y, this.pos.z);
+        sphere(this.r);
         pop();
     }
-    borders() {
+    borders(ancho, alto, profundidad) {
+        let w = ancho / 2;
+        let h = alto / 2;
+        let d = profundidad / 2;
         switch (this.borderBehaviour) {
             case BorderBehaviour.BORDERS:
-                if (this.pos.x < this.r || this.pos.x > width - this.r)
+                if (this.pos.x < -w + this.r || this.pos.x > w - this.r)
                     this.speed.x *= -this.borderDamp;
-                if (this.pos.y < this.r || this.pos.y > height - this.r)
+                if (this.pos.y < -h + this.r || this.pos.y > h - this.r)
                     this.speed.y *= -this.borderDamp;
-                this.pos.x = constrain(this.pos.x, this.r, width - this.r);
-                this.pos.y = constrain(this.pos.y, this.r, height - this.r);
+                if (this.pos.z < -d + this.r || this.pos.z > d - this.r)
+                    this.speed.z *= -this.borderDamp;
+                this.pos.x = constrain(this.pos.x, -w + this.r, w - this.r);
+                this.pos.y = constrain(this.pos.y, -h + this.r, h - this.r);
+                this.pos.z = constrain(this.pos.z, -d + this.r, d - this.r);
                 break;
             case BorderBehaviour.WRAP:
-                if (this.pos.x > width + this.r) this.pos.x = -this.r;
-                if (this.pos.x < -this.r) this.pos.x = width + this.r;
-                if (this.pos.y > height + this.r) this.pos.y = -this.r;
-                if (this.pos.y < -this.r) this.pos.y = height + this.r;
+                if (this.pos.x > w + this.r) this.pos.x = -w - this.r;
+                if (this.pos.x < -w - this.r) this.pos.x = w + this.r;
+                if (this.pos.y > h + this.r) this.pos.y = -h - this.r;
+                if (this.pos.y < -h - this.r) this.pos.y = h + this.r;
+                if (this.pos.z > d + this.r) this.pos.z = -d - this.r;
+                if (this.pos.z < -d - this.r) this.pos.z = d + this.r;
                 break;
             case BorderBehaviour.NONE:
                 break;
@@ -127,10 +135,10 @@ class Agent2D {
     wander() {
         let future = this.speed.copy();
         future.setMag(this.wanderLookAhead);
-        let r = this.speed.copy();
-        r.setMag(this.wanderRadius);
-        r.rotate(map(noise(this.wanderNoiseT), 0, 1, -PI, PI));
-        this.wanderDebug(future, r);
+        let theta = map(noise(this.wanderNoiseT), 0, 1, 0, PI);
+        let phi = map(noise(this.wanderNoiseT + 1000), 0, 1, -PI, PI);
+        let r = p5.Vector.fromAngles(theta, phi, this.wanderRadius);
+        //this.wanderDebug(future, r);
         this.wanderNoiseT += this.wanderNoiseInc;
         r.add(future);
         r.add(this.pos);
@@ -141,16 +149,16 @@ class Agent2D {
         stroke(255);
         strokeWeight(1);
         noFill();
-        translate(this.pos.x, this.pos.y);
-        line(0, 0, future.x, future.y);
-        translate(future.x, future.y);
+        translate(this.pos.x, this.pos.y, this.pos.z);
+        line(0, 0, 0, future.x, future.y, future.z);
+        translate(future.x, future.y, future.z);
         ellipse(0, 0, r.mag() * 2);
-        translate(r.x, r.y);
+        translate(r.x, r.y, r.z);
         ellipse(0, 0, 5);
-        pop();     
+        pop();
     }
     align(agents) {
-        let result = createVector(0, 0);
+        let result = createVector(0, 0, 0);
         let n = 0;
         for (let a of agents) {
             if (this != a && this.pos.dist(a.pos) <= this.alignmentRadius) {
@@ -166,7 +174,7 @@ class Agent2D {
         }
     }
     separate(agents) {
-        let result = createVector(0, 0);
+        let result = createVector(0, 0, 0);
         let n = 0;
         for (let a of agents) {
             if (this != a && this.pos.dist(a.pos) <= this.separationRadius) {
@@ -180,6 +188,25 @@ class Agent2D {
         if (n > 0) {
             result.div(n);
             result.mult(this.separationRatio);
+            result.limit(this.maxSteeringForce);
+            this.addForce(result);
+        }
+    }
+
+    cohere(agents) {
+        let result = createVector(0, 0, 0); 
+        let n = 0;
+        for (let a of agents) {
+            let d = p5.Vector.dist(this.pos, a.pos);
+            if (this != a && d <= this.cohesionRadius) {
+                result.add(a.pos);
+                n++;
+            }
+        }
+        if (n > 0) {
+            result.div(n);
+            result.sub(this.pos);
+            result.setMag(this.cohesionRatio);
             result.limit(this.maxSteeringForce);
             this.addForce(result);
         }
