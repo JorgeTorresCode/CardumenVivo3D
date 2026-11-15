@@ -1,3 +1,9 @@
+const BorderBehaviour = {
+    BORDERS : "BORDERS",
+    WRAP : "WRAP",
+    NONE : "NONE"
+}
+
 class Agent3D {
     constructor(x, y, z, mass) {
         this.pos = createVector(x, y, z);
@@ -27,6 +33,7 @@ class Agent3D {
 
         this.cohesionRadius = 150;
         this.cohesionRatio = 1;
+        this.borderBehaviour = BorderBehaviour.WRAP;
     }
 
     static createRandomSpeed(x, y, z, mass, massLoss, esDepredador, tamano) {
