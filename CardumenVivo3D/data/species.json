@@ -1,0 +1,22 @@
+{
+  "especies": [
+    {
+      "nombre": "Sardina del Pacifico (Sardinops sagax)",
+      "color": [170, 195, 210],
+      "nivelTrofico": 2.5,
+      "espectroTrofico": [1, 2],
+      "tamano": 1,
+      "radius": 15,
+      "radioPercepcion": 150,
+      "velocidadBase": 2,
+      "velocidadRafaga": 4.8,
+      "energiaMaxima": 100,
+      "energiaInicial": 60,
+      "umbralHambre": 65,
+      "umbralReproduccion": 85,
+      "eficienciaAsimilacion": 0.7,
+      "costoMetabolicoBase": 0.12,
+      "costoLocomocion": 0.025
+    }
+  ]
+}

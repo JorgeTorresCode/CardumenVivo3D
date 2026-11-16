@@ -8,7 +8,6 @@ class Fitoplancton {
 
         this.color = color(80, random(200, 255), random(120, 180), 210);
     }
-
     
     static createRandom(ancho, alto, depth, minEnergia = 1, maxEnergia = 10) {
         let halfW = ancho / 2;

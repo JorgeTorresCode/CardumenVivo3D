@@ -6,7 +6,29 @@ function setup() {
 
     // (densidadMaxima, ratioAparicion %, tasaBase, minEnergia, maxEnergia)
     fishSystem.configurarFitoplancton(0.05, 0.5, 0.08, 1, 10);
-    fishSystem.addMinibanco(10, 15, false, 1);
+    cargarEspecies();
+}
+
+async function cargarEspecies() {
+    try {
+        const [respuestaDatos, respuestaEsquema] = await Promise.all([
+            fetch("data/species.json"),
+            fetch("data/species.schema.json")
+        ]);
+        if (!respuestaDatos.ok) {
+            throw new Error(`HTTP ${respuestaDatos.status} al cargar las especies`);
+        }
+        if (!respuestaEsquema.ok) {
+            throw new Error(`HTTP ${respuestaEsquema.status} al cargar el esquema de especies`);
+        }
+        const [datos, esquema] = await Promise.all([
+            respuestaDatos.json(),
+            respuestaEsquema.json()
+        ]);
+        fishSystem.cargarJSON(datos, esquema);
+    } catch (error) {
+        console.error("No se pudo cargar el catalogo de especies:", error);
+    }
 }
 
 function draw() {

@@ -18,28 +18,23 @@ class FishSystem3D {
         this.inicializarFitoplancton();
     }
 
-    cargarJSON(datosJSON) {
+    cargarJSON(datosJSON, esquema) {
         if (!datosJSON || !Array.isArray(datosJSON.especies)) {
             return;
         }
+
+        const validarEspecie = new ajv2020().compile(esquema);
         for (let especie of datosJSON.especies) {
-            this.registrarEspecie(especie);
-        }
-    }
-
-    registrarEspecie(especie) {
-        this.catalogoEspecies.push(especie);
-        let cantidad = especie.cantidadInicial ?? 0;
-
-        if (cantidad > 0) {
-            if (especie.enMinibanco) {
-                this.addMinibanco(cantidad, especie);
-            } else {
-                this.addRandomAgents(cantidad, especie);
+            if (!validarEspecie(especie)) {
+                console.log(
+                    "Especie descartada:", especie?.nombre ?? "(sin nombre)",
+                    "Motivo:", validarEspecie.errors
+                );
+                continue;
             }
+            this.catalogoEspecies.push(especie);
         }
     }
-
 
     configurarFitoplancton(densidadMaxima, ratioAparicion, tasaBase, minEnergia = 1, maxEnergia = 10) {
         this.densidadMaxima = densidadMaxima;
