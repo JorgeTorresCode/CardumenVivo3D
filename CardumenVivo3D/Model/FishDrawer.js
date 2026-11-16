@@ -11,7 +11,6 @@ class FishDrawer {
         }
         pop();
     }
-
     static aplicarTransformacion(pez) {
         if (pez.speed.magSq() > 0.000001) {
             pez.direccionAnterior = pez.speed.copy();
@@ -28,12 +27,10 @@ class FishDrawer {
         scale(pez.r / 38);
         noStroke();
     }
-
     static dibujarCuerpo(pez) {
         ambientMaterial(pez.color);
         ellipsoid(38, 18, 14, 24, 16);
     }
-
     static dibujarCola(pez) {
         const frecuencia = 2.2; 
         const amplitud = 0.45; 
@@ -45,7 +42,6 @@ class FishDrawer {
         this.dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]], 0.5);
         pop();
     }
-
     static dibujarOjos(pez) {
         ambientMaterial(pez.color);
         for (const lado of [-1, 1]) {
@@ -57,18 +53,15 @@ class FishDrawer {
             pop();
         }
     }
-
     static dibujarAletaDorsal(pez) {
         ambientMaterial(pez.color);
         this.dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]], 0.5);
     }
-
     static dibujarAletasLaterales(pez) {
         ambientMaterial(pez.color);
         this.dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]], 0.5);
         this.dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]], 0.5);
     }
-
     static dibujarAleta(puntos, grosor) {
         const triangulo = puntos.map(([x, y, z]) => createVector(x, y, z));
         const borde1 = p5.Vector.sub(triangulo[1], triangulo[0]);

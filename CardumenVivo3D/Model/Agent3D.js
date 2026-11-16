@@ -1,9 +1,3 @@
-const BorderBehaviour = {
-    BORDERS: "BORDERS",
-    WRAP: "WRAP",
-    NONE: "NONE"
-};
-
 class Agent3D {
     constructor(x, y, z, mass = 1) {
         this.pos = createVector(x, y, z);
@@ -14,10 +8,9 @@ class Agent3D {
 
         this.r = Math.cbrt((3 * this.mass) / (4 * PI));
 
-        this.borderDamp = 0.8;
-        this.maxSteeringForce = 0.03;
+        this.maxSteeringForce = 0.08;
         this.maxSpeed = 2;
-        this.arrivalDist = 200;
+        this.arrivalDist = 100;
 
         this.wanderLookAhead = 70;
         this.wanderRadius = 50;
@@ -32,9 +25,7 @@ class Agent3D {
 
         this.cohesionRadius = 150;
         this.cohesionRatio = 1;
-        this.borderBehaviour = BorderBehaviour.WRAP;
     }
-
     update(ancho, alto, profundidad) {
         this.lastPos.set(this.pos);
         this.speed.add(this.acc);
@@ -43,7 +34,6 @@ class Agent3D {
         this.acc.mult(0);
         this.borders(ancho, alto, profundidad);
     }
-
     display() {
         push();
         noStroke();
@@ -53,58 +43,48 @@ class Agent3D {
         pop();
     }
 
+    // TODO
     borders(ancho, alto, profundidad) {
-        let w = ancho / 2;
-        let h = alto / 2;
-        let d = profundidad / 2;
-        switch (this.borderBehaviour) {
-            case BorderBehaviour.BORDERS:
-                if (this.pos.x < -w + this.r || this.pos.x > w - this.r)
-                    this.speed.x *= -this.borderDamp;
-                if (this.pos.y < -h + this.r || this.pos.y > h - this.r)
-                    this.speed.y *= -this.borderDamp;
-                if (this.pos.z < -d + this.r || this.pos.z > d - this.r)
-                    this.speed.z *= -this.borderDamp;
-                this.pos.x = constrain(this.pos.x, -w + this.r, w - this.r);
-                this.pos.y = constrain(this.pos.y, -h + this.r, h - this.r);
-                this.pos.z = constrain(this.pos.z, -d + this.r, d - this.r);
-                break;
-            case BorderBehaviour.WRAP:
-                if (this.pos.x > w + this.r) this.pos.x = -w - this.r;
-                if (this.pos.x < -w - this.r) this.pos.x = w + this.r;
-                if (this.pos.y > h + this.r) this.pos.y = -h - this.r;
-                if (this.pos.y < -h - this.r) this.pos.y = h + this.r;
-                if (this.pos.z > d + this.r) this.pos.z = -d - this.r;
-                if (this.pos.z < -d - this.r) this.pos.z = d + this.r;
-                break;
-            case BorderBehaviour.NONE:
-                break;
-        }
-    }
+        const w = ancho / 2 - this.r;
+        const h = alto / 2 - this.r;
+        const d = profundidad / 2 - this.r;
+        const margen = 150;
 
+        const fuerza = createVector(0, 0, 0);
+
+        const empuje = distancia =>
+            this.mass * constrain(1 - distancia / margen, 0, 1) ** 2;
+
+        if (this.pos.x > w - margen) fuerza.x -= empuje(w - this.pos.x);
+        if (this.pos.x < -w + margen) fuerza.x += empuje(this.pos.x + w);
+
+        if (this.pos.y > h - margen) fuerza.y -= empuje(h - this.pos.y);
+        if (this.pos.y < -h + margen) fuerza.y += empuje(this.pos.y + h);
+
+        if (this.pos.z > d - margen) fuerza.z -= empuje(d - this.pos.z);
+        if (this.pos.z < -d + margen) fuerza.z += empuje(this.pos.z + d);
+
+        this.addForce(fuerza);
+    }
     addForce(f) {
         let force = p5.Vector.div(f, this.mass);
         this.acc.add(force);
     }
-
     applyGravity(g) {
-        this.acc.add(g);
+        this.acc.add(g); 
     }
-
     applyFriction(m) {
         let fric = this.speed.copy();
         fric.normalize();
         fric.mult(-m);
         this.addForce(fric);
     }
-
     applyDrag(d) {
         let drag = this.speed.copy();
         drag.normalize();
         drag.mult(this.speed.mag() ** 2 * -d);
         this.addForce(drag);
     }
-
     seek(target) {
         let desired = p5.Vector.sub(target, this.pos);
         desired.setMag(this.maxSpeed);
@@ -112,7 +92,6 @@ class Agent3D {
         steering.limit(this.maxSteeringForce);
         this.addForce(steering);
     }
-
     arrive(target) {
         let desired = p5.Vector.sub(target, this.pos);
         let d = desired.mag();
@@ -126,7 +105,6 @@ class Agent3D {
         steering.limit(this.maxSteeringForce);
         this.addForce(steering);
     }
-
     wander() {
         let future = this.speed.copy();
         future.setMag(this.wanderLookAhead);
@@ -138,7 +116,6 @@ class Agent3D {
         r.add(this.pos);
         this.seek(r);
     }
-
     align(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;
@@ -155,7 +132,6 @@ class Agent3D {
             this.addForce(result);
         }
     }
-
     separate(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;
@@ -175,7 +151,6 @@ class Agent3D {
             this.addForce(result);
         }
     }
-
     cohere(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;

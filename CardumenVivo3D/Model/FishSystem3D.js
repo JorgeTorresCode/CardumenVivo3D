@@ -1,6 +1,6 @@
 class FishSystem3D {
     constructor(depth, ancho, alto) {
-        this.agents = [];
+        this.fish = [];
         this.fitoplancton = [];
         this.catalogoEspecies = [];
 
@@ -17,7 +17,6 @@ class FishSystem3D {
         this.acumuladorFitoplancton = 0;
         this.inicializarFitoplancton();
     }
-
     cargarJSON(datosJSON, esquema) {
         if (!datosJSON || !Array.isArray(datosJSON.especies)) {
             return;
@@ -35,7 +34,6 @@ class FishSystem3D {
             this.catalogoEspecies.push(especie);
         }
     }
-
     configurarFitoplancton(densidadMaxima, ratioAparicion, tasaBase, minEnergia = 1, maxEnergia = 10) {
         this.densidadMaxima = densidadMaxima;
         this.ratioAparicion = constrain(ratioAparicion, 0, 1);
@@ -44,12 +42,10 @@ class FishSystem3D {
         this.maxEnergiaFito = maxEnergia;
         this.inicializarFitoplancton();
     }
-
     getCapacidadCarga() {
         let volumenBloques = (this.ancho * this.alto * this.depth) / 1e6;
         return Math.max(0, Math.floor(volumenBloques * this.densidadMaxima));
     }
-
     inicializarFitoplancton() {
         this.fitoplancton = [];
         this.acumuladorFitoplancton = 0;
@@ -62,7 +58,6 @@ class FishSystem3D {
             this.agregarFitoplanctonAleatorio();
         }
     }
-
     agregarFitoplanctonAleatorio() {
         let fito = Fitoplancton.createRandom(
             this.ancho,
@@ -73,14 +68,12 @@ class FishSystem3D {
         );
         this.fitoplancton.push(fito);
     }
-
     eliminarFitoplancton(fito) {
         let indice = this.fitoplancton.indexOf(fito);
         if (indice !== -1) {
             this.fitoplancton.splice(indice, 1);
         }
     }
-
     regenerarFitoplancton() {
         let K = this.getCapacidadCarga();
         let N = this.fitoplancton.length;
@@ -105,74 +98,64 @@ class FishSystem3D {
             this.acumuladorFitoplancton -= nuevos;
         }
     }
-
-
     cohere() {
-        for (let a of this.agents) {
-            let mismaEspecie = this.agents.filter(otro => otro.especie === a.especie);
-            a.cohere(mismaEspecie);
+        for (let pez of this.fish) {
+            let mismaEspecie = this.fish.filter(otro => otro.especie === pez.especie);
+            pez.cohere(mismaEspecie);
         }
     }
-
     align() {
-        for (let a of this.agents) {
-            let mismaEspecie = this.agents.filter(otro => otro.especie === a.especie);
-            a.align(mismaEspecie);
+        for (let pez of this.fish) {
+            let mismaEspecie = this.fish.filter(otro => otro.especie === pez.especie);
+            pez.align(mismaEspecie);
         }
     }
-
     separate() {
-        for (let a of this.agents) {
-            a.separate(this.agents);
+        for (let pez of this.fish) {
+            pez.separate(this.fish);
         }
     }
-
     wander() {
-        for (let a of this.agents) {
-            a.wander();
+        for (let pez of this.fish) {
+            pez.wander();
         }
     }
-
-
     update() {
         this.regenerarFitoplancton();
         for (let f of this.fitoplancton) {
             f.display();
         }
 
-        for (let i = this.agents.length - 1; i >= 0; i--) {
-            let a = this.agents[i];
+        for (let i = this.fish.length - 1; i >= 0; i--) {
+            let pez = this.fish[i];
 
-            if (a.isDead()) {
-                this.agents.splice(i, 1);
+            if (pez.isDead()) {
+                this.fish.splice(i, 1);
                 continue;
             }
 
-            let fitoConsumido = a.buscarYComerFitoplancton(this.fitoplancton);
+            let fitoConsumido = pez.buscarYComerFitoplancton(this.fitoplancton);
             if (fitoConsumido !== null) {
                 this.eliminarFitoplancton(fitoConsumido);
             }
 
-            a.update(this.ancho, this.alto, this.depth);
-            a.display();
+            pez.update(this.ancho, this.alto, this.depth);
+            pez.display();
         }
     }
-
-
-    addRandomAgents(count, especie) {
+    addRandomFish(count, especie) {
         for (let i = 0; i < count; i++) {
-            let agent = Fish.createRandomPos(
+            let pez = Fish.createRandomPos(
                 this.ancho,
                 this.alto,
                 this.depth,
                 especie
             );
-            agent.speed = p5.Vector.random3D();
-            agent.speed.mult(random(1, agent.maxSpeed));
-            this.agents.push(agent);
+            pez.speed = p5.Vector.random3D();
+            pez.speed.mult(random(1, pez.maxSpeed));
+            this.fish.push(pez);
         }
     }
-
     addMinibanco(count, especie) {
         let dispersionX = Math.min(30, this.ancho / 4);
         let dispersionY = Math.min(30, this.alto / 4);
@@ -194,7 +177,7 @@ class FishSystem3D {
 
             let pez = new Fish(x, y, z, especie);
             pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
-            this.agents.push(pez);
+            this.fish.push(pez);
         }
     }
 }

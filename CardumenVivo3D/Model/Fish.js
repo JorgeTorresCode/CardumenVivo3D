@@ -31,7 +31,6 @@ class Fish extends Agent3D {
         this.tiempoCola = 0;
         this.direccionAnterior = createVector(1, 0, 0);
     }
-
     static createRandomPos(ancho, alto, depth, especie) {
         return new Fish(
             random(-ancho / 2, ancho / 2),
@@ -40,46 +39,42 @@ class Fish extends Agent3D {
             especie
         );
     }
-
     puedeComerFitoplancton() {
         return this.espectroTrofico[0] <= 1.0 && this.espectroTrofico[1] >= 1.0;
     }
-
     tieneHambre() {
         return this.energia < this.umbralHambre;
     }
-
     buscarYComerFitoplancton(listaFitoplancton) {
-    if (!this.puedeComerFitoplancton() || !this.tieneHambre() || listaFitoplancton.length === 0) {
+        if (!this.puedeComerFitoplancton() || !this.tieneHambre() || listaFitoplancton.length === 0) {
+            return null;
+        }
+
+        let fitoMasCercano = null;
+        let distMinima = this.radioPercepcion;
+
+        for (let f of listaFitoplancton) {
+            let d = this.pos.dist(f.pos);
+            if (d < distMinima) {
+                distMinima = d;
+                fitoMasCercano = f;
+            }
+        }
+
+        if (fitoMasCercano !== null) {
+            let radioContacto = this.r + fitoMasCercano.r;
+
+            if (distMinima <= radioContacto) {
+                let energiaGanada = fitoMasCercano.energia * this.eficienciaAsimilacion;
+                this.energia = Math.min(this.energiaMaxima, this.energia + energiaGanada);
+                return fitoMasCercano; 
+            } else {
+                this.seek(fitoMasCercano.pos);
+            }
+        }
+
         return null;
     }
-
-    let fitoMasCercano = null;
-    let distMinima = this.radioPercepcion;
-
-    for (let f of listaFitoplancton) {
-        let d = this.pos.dist(f.pos);
-        if (d < distMinima) {
-            distMinima = d;
-            fitoMasCercano = f;
-        }
-    }
-
-    if (fitoMasCercano !== null) {
-        let radioContacto = this.r + fitoMasCercano.r;
-
-        if (distMinima <= radioContacto) {
-            let energiaGanada = fitoMasCercano.energia * this.eficienciaAsimilacion;
-            this.energia = Math.min(this.energiaMaxima, this.energia + energiaGanada);
-            return fitoMasCercano; 
-        } else {
-            this.seek(fitoMasCercano.pos);
-        }
-    }
-
-    return null;
-}
-
     actualizarEnergia() {
         let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
         let gastoBasal = this.costoMetabolicoBase * dt;
@@ -88,11 +83,9 @@ class Fish extends Agent3D {
         // dE/dt = Ingesta - C_metabolico - C_locomocion
         this.energia -= (gastoBasal + gastoMovimiento);
     }
-
     isDead() {
         return this.energia <= 0;
     }
-
     update(ancho, alto, profundidad) {
         super.update(ancho, alto, profundidad);
         this.actualizarEnergia();
@@ -102,7 +95,6 @@ class Fish extends Agent3D {
             this.direccionAnterior.set(this.speed).normalize();
         }
     }
-
     display() {
         FishDrawer.display(this.esDepredador, this);
     }

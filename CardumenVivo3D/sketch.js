@@ -15,17 +15,20 @@ async function cargarEspecies() {
             fetch("data/species.json"),
             fetch("data/species.schema.json")
         ]);
-        if (!respuestaDatos.ok) {
+        if (!respuestaDatos.ok)
             throw new Error(`HTTP ${respuestaDatos.status} al cargar las especies`);
-        }
-        if (!respuestaEsquema.ok) {
+        if (!respuestaEsquema.ok)
             throw new Error(`HTTP ${respuestaEsquema.status} al cargar el esquema de especies`);
-        }
         const [datos, esquema] = await Promise.all([
             respuestaDatos.json(),
             respuestaEsquema.json()
         ]);
         fishSystem.cargarJSON(datos, esquema);
+
+        const especie = fishSystem.catalogoEspecies[0];
+        if (especie) {
+            fishSystem.addMinibanco(10, especie);
+        }
     } catch (error) {
         console.error("No se pudo cargar el catalogo de especies:", error);
     }
