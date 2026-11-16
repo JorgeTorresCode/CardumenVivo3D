@@ -25,7 +25,7 @@ class FishDrawer {
         rotateY(giroHorizontal);
         rotateZ(inclinacion);
         
-        scale(pez.tamano * pez.r / 38);
+        scale(pez.r / 38);
         noStroke();
     }
 

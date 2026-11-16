@@ -1,23 +1,45 @@
 class FishSystem3D {
-    // Se conserva depth como primer argumento para las llamadas existentes.
     constructor(depth, ancho, alto) {
         this.agents = [];
         this.fitoplancton = [];
+        this.catalogoEspecies = [];
 
         this.depth = depth;
         this.ancho = ancho;
         this.alto = alto;
 
-        // Parámetros por defecto del modelo matemático de fitoplancton
-        this.densidadMaxima = 0.05; // esferas por cada 10^6 
-        this.ratioAparicion = 0.5; // 0.0 a 1.0
-        this.tasaBaseRegeneracion = 0.05; // velocidad base (1/s)
+        this.densidadMaxima = 0.05; 
+        this.ratioAparicion = 0.5; 
+        this.tasaBaseRegeneracion = 0.05; 
         this.minEnergiaFito = 1;
         this.maxEnergiaFito = 10;
 
         this.acumuladorFitoplancton = 0;
         this.inicializarFitoplancton();
     }
+
+    cargarJSON(datosJSON) {
+        if (!datosJSON || !Array.isArray(datosJSON.especies)) {
+            return;
+        }
+        for (let especie of datosJSON.especies) {
+            this.registrarEspecie(especie);
+        }
+    }
+
+    registrarEspecie(especie) {
+        this.catalogoEspecies.push(especie);
+        let cantidad = especie.cantidadInicial ?? 0;
+
+        if (cantidad > 0) {
+            if (especie.enMinibanco) {
+                this.addMinibanco(cantidad, especie);
+            } else {
+                this.addRandomAgents(cantidad, especie);
+            }
+        }
+    }
+
 
     configurarFitoplancton(densidadMaxima, ratioAparicion, tasaBase, minEnergia = 1, maxEnergia = 10) {
         this.densidadMaxima = densidadMaxima;
@@ -29,7 +51,7 @@ class FishSystem3D {
     }
 
     getCapacidadCarga() {
-        let volumenBloques = (this.ancho * this.alto * this.depth) / 1e6; //Se divide entre 1e6 para obtener el volumen en bloques, cada bloque es de 100^3 de volumen
+        let volumenBloques = (this.ancho * this.alto * this.depth) / 1e6;
         return Math.max(0, Math.floor(volumenBloques * this.densidadMaxima));
     }
 
@@ -46,6 +68,24 @@ class FishSystem3D {
         }
     }
 
+    agregarFitoplanctonAleatorio() {
+        let fito = Fitoplancton.createRandom(
+            this.ancho,
+            this.alto,
+            this.depth,
+            this.minEnergiaFito,
+            this.maxEnergiaFito
+        );
+        this.fitoplancton.push(fito);
+    }
+
+    eliminarFitoplancton(fito) {
+        let indice = this.fitoplancton.indexOf(fito);
+        if (indice !== -1) {
+            this.fitoplancton.splice(indice, 1);
+        }
+    }
+
     regenerarFitoplancton() {
         let K = this.getCapacidadCarga();
         let N = this.fitoplancton.length;
@@ -58,9 +98,6 @@ class FishSystem3D {
         let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
 
         // dN/dt = r_base * ratio * (K - N)
-        //Donde N  = poblacion actual, K = capacidad de carga, r_base = tasa base de regeneracion, (K - N) = espacio disponible
-        //dt = delta time, tiempo transcurrido desde el ultimo frame
-        
         let dN = this.tasaBaseRegeneracion * ratio * (K - N) * dt;
         this.acumuladorFitoplancton += dN;
 
@@ -74,26 +111,18 @@ class FishSystem3D {
         }
     }
 
-    agregarFitoplanctonAleatorio() {
-    let fito = Fitoplancton.createRandom(
-        this.ancho,
-        this.alto,
-        this.depth,
-        this.minEnergiaFito,
-        this.maxEnergiaFito
-    );
-    this.fitoplancton.push(fito);
-}
 
     cohere() {
         for (let a of this.agents) {
-            a.cohere(this.agents);
+            let mismaEspecie = this.agents.filter(otro => otro.especie === a.especie);
+            a.cohere(mismaEspecie);
         }
     }
 
     align() {
         for (let a of this.agents) {
-            a.align(this.agents);
+            let mismaEspecie = this.agents.filter(otro => otro.especie === a.especie);
+            a.align(mismaEspecie);
         }
     }
 
@@ -109,8 +138,8 @@ class FishSystem3D {
         }
     }
 
+
     update() {
-        
         this.regenerarFitoplancton();
         for (let f of this.fitoplancton) {
             f.display();
@@ -118,10 +147,15 @@ class FishSystem3D {
 
         for (let i = this.agents.length - 1; i >= 0; i--) {
             let a = this.agents[i];
-            
+
             if (a.isDead()) {
                 this.agents.splice(i, 1);
                 continue;
+            }
+
+            let fitoConsumido = a.buscarYComerFitoplancton(this.fitoplancton);
+            if (fitoConsumido !== null) {
+                this.eliminarFitoplancton(fitoConsumido);
             }
 
             a.update(this.ancho, this.alto, this.depth);
@@ -129,15 +163,14 @@ class FishSystem3D {
         }
     }
 
-    addRandomAgents(count, mass, esDepredador, tamano) {
+
+    addRandomAgents(count, especie) {
         for (let i = 0; i < count; i++) {
             let agent = Fish.createRandomPos(
-                mass,
                 this.ancho,
                 this.alto,
                 this.depth,
-                esDepredador,
-                tamano
+                especie
             );
             agent.speed = p5.Vector.random3D();
             agent.speed.mult(random(1, agent.maxSpeed));
@@ -145,7 +178,7 @@ class FishSystem3D {
         }
     }
 
-    addMinibanco(count, mass, esDepredador, tamano) {
+    addMinibanco(count, especie) {
         let dispersionX = Math.min(30, this.ancho / 4);
         let dispersionY = Math.min(30, this.alto / 4);
         let dispersionZ = Math.min(30, this.depth / 4);
@@ -155,7 +188,7 @@ class FishSystem3D {
         let centroX = random(-margenX, margenX);
         let centroY = random(-margenY, margenY);
         let centroZ = random(-margenZ, margenZ);
-        
+
         let velocidadBase = p5.Vector.random3D();
         velocidadBase.mult(2);
 
@@ -164,8 +197,7 @@ class FishSystem3D {
             let y = centroY + random(-dispersionY, dispersionY);
             let z = centroZ + random(-dispersionZ, dispersionZ);
 
-            let pez = new Fish(x, y, z, mass, esDepredador, tamano);
-            
+            let pez = new Fish(x, y, z, especie);
             pez.speed = velocidadBase.copy().add(p5.Vector.random3D().mult(0.5));
             this.agents.push(pez);
         }
