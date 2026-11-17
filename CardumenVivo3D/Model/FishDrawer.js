@@ -28,7 +28,7 @@ class FishDrawer {
         noStroke();
     }
     static dibujarCuerpo(pez) {
-        ambientMaterial(pez.color);
+        ambientMaterial(pez.especie.color);
         ellipsoid(38, 18, 14, 24, 16);
     }
     static dibujarCola(pez) {
@@ -38,12 +38,12 @@ class FishDrawer {
         push();
         translate(-34, 0, 0);
         rotateY(Math.sin(fase) * amplitud);
-        ambientMaterial(pez.color);
+        ambientMaterial(pez.especie.color);
         this.dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]], 0.5);
         pop();
     }
     static dibujarOjos(pez) {
-        ambientMaterial(pez.color);
+        ambientMaterial(pez.especie.color);
         for (const lado of [-1, 1]) {
             push();
             translate(23, -5, lado * 10.5);
@@ -54,11 +54,11 @@ class FishDrawer {
         }
     }
     static dibujarAletaDorsal(pez) {
-        ambientMaterial(pez.color);
+        ambientMaterial(pez.especie.color);
         this.dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]], 0.5);
     }
     static dibujarAletasLaterales(pez) {
-        ambientMaterial(pez.color);
+        ambientMaterial(pez.especie.color);
         this.dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]], 0.5);
         this.dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]], 0.5);
     }

@@ -4,30 +4,12 @@ class Fish extends Agent3D {
 
         this.especie = especie;
 
-        // Atributos cuantitativos del modelo 
-        this.nivelTrofico = especie.nivelTrofico;
-        this.espectroTrofico = especie.espectroTrofico; // [minTL, maxTL]
         this.tamano = especie.tamano;
-        this.radioPercepcion = especie.radioPercepcion;
-
-        this.velocidadBase = especie.velocidadBase;
-        this.velocidadRafaga = especie.velocidadRafaga;
-        this.maxSpeed = this.velocidadBase;
-
-        // 
-        this.energiaMaxima = especie.energiaMaxima;
         this.energia = especie.energiaInicial;
-        this.umbralHambre = especie.umbralHambre;
-        this.umbralReproduccion = especie.umbralReproduccion;
-        this.eficienciaAsimilacion = especie.eficienciaAsimilacion;
-        this.costoMetabolicoBase = especie.costoMetabolicoBase;
-        this.costoLocomocion = especie.costoLocomocion;
 
-        // Esto es para no cambiar el FishDrawer 
-        this.esDepredador = this.nivelTrofico >= 3.0;
+        this.esDepredador = especie.nivelTrofico >= 3.0;
         this.r = 15 * this.tamano;
-
-        this.color = color(...especie.color);
+        
         this.tiempoCola = 0;
         this.direccionAnterior = createVector(1, 0, 0);
     }
@@ -40,10 +22,10 @@ class Fish extends Agent3D {
         );
     }
     puedeComerFitoplancton() {
-        return this.espectroTrofico[0] <= 1.0 && this.espectroTrofico[1] >= 1.0;
+        return this.especie.espectroTrofico[0] <= 1.0 && this.especie.espectroTrofico[1] >= 1.0;
     }
     tieneHambre() {
-        return this.energia < this.umbralHambre;
+        return this.energia < this.especie.umbralHambre;
     }
     buscarYComerFitoplancton(listaFitoplancton) {
         if (!this.puedeComerFitoplancton() || !this.tieneHambre() || listaFitoplancton.length === 0) {
@@ -51,7 +33,7 @@ class Fish extends Agent3D {
         }
 
         let fitoMasCercano = null;
-        let distMinima = this.radioPercepcion;
+        let distMinima = this.especie.radioPercepcion;
 
         for (let f of listaFitoplancton) {
             let d = this.pos.dist(f.pos);
@@ -65,8 +47,8 @@ class Fish extends Agent3D {
             let radioContacto = this.r + fitoMasCercano.r;
 
             if (distMinima <= radioContacto) {
-                let energiaGanada = fitoMasCercano.energia * this.eficienciaAsimilacion;
-                this.energia = Math.min(this.energiaMaxima, this.energia + energiaGanada);
+                let energiaGanada = fitoMasCercano.energia * this.especie.eficienciaAsimilacion;
+                this.energia = Math.min(this.especie.energiaMaxima, this.energia + energiaGanada);
                 return fitoMasCercano; 
             } else {
                 this.seek(fitoMasCercano.pos);
@@ -77,8 +59,8 @@ class Fish extends Agent3D {
     }
     actualizarEnergia() {
         let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
-        let gastoBasal = this.costoMetabolicoBase * dt;
-        let gastoMovimiento = this.costoLocomocion * this.speed.magSq() * dt;
+        let gastoBasal = this.especie.costoMetabolicoBase * dt;
+        let gastoMovimiento = this.especie.costoLocomocion * this.speed.magSq() * dt;
 
         // dE/dt = Ingesta - C_metabolico - C_locomocion
         this.energia -= (gastoBasal + gastoMovimiento);
