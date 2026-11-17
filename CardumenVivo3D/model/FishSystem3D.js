@@ -16,7 +16,6 @@ class FishSystem3D {
         this.acumuladorFitoplancton = 0;
         this.inicializarFitoplancton();
     }
-
     getTrophicLevel(level) {
         let nivel = this.ecosystem.find(nivel => nivel.level === level);
         if (!nivel) {
@@ -26,9 +25,10 @@ class FishSystem3D {
         return nivel;
     }
     getFish() {
+        const fitoplancton = this.getSpecie(1, "Fitoplancton");
         return this.ecosystem.flatMap(nivel => nivel.especies)
-            .flatMap(especie => especie.beings)
-            .filter(ser => ser instanceof Fish);
+            .filter(especie => especie !== fitoplancton)
+            .flatMap(especie => especie.beings);
     }
     getSpecie(level, name) {
         const nivel = this.getTrophicLevel(level);
@@ -124,22 +124,16 @@ class FishSystem3D {
             this.acumuladorFitoplancton -= nuevos;
         }
     }
-    cohere() {
+    cohereAndAlign() {
         for (let nivel of this.ecosystem) {
+            if (nivel.level === 1) continue;
             for (let especie of nivel.especies) {
-                const fish = especie.beings.filter(ser => ser instanceof Fish);
+                const fish = especie.beings;
                 for (let pez of fish) {
-                    if (!pez.persiguiendo && !pez.huyendo) pez.cohere(fish);
-                }
-            }
-        }
-    }
-    align() {
-        for (let nivel of this.ecosystem) {
-            for (let especie of nivel.especies) {
-                const fish = especie.beings.filter(ser => ser instanceof Fish);
-                for (let pez of fish) {
-                    if (!pez.persiguiendo && !pez.huyendo) pez.align(fish);
+                    if (!pez.persiguiendo && !pez.huyendo) {
+                        pez.cohere(fish);
+                        pez.align(fish);
+                    }
                 }
             }
         }
@@ -168,13 +162,17 @@ class FishSystem3D {
         }
 
         const todosLosPeces = this.getFish();
+        const fitoplancton = this.getSpecie(1, "Fitoplancton");
 
         for (let nivel of this.ecosystem) {
             for (let especie of nivel.especies) {
-                const fish = especie.beings.filter(ser => ser instanceof Fish);
-                for (let pez of fish) {
+                if (especie === fitoplancton) continue;
+                const fish = especie.beings;
+                for (let i = 0; i < fish.length; i++) {
+                    const pez = fish[i];
                     if (pez.isDead()) {
-                        especie.beings.splice(especie.beings.indexOf(pez), 1);
+                        fish.splice(i, 1);
+                        i--;
                         continue;
                     }
                     

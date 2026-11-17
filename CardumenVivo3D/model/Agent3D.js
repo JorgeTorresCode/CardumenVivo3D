@@ -116,6 +116,24 @@ class Agent3D {
         r.add(this.pos);
         this.seek(r);
     }
+    cohere(agents) {
+        let result = createVector(0, 0, 0);
+        let n = 0;
+        for (let a of agents) {
+            let d = p5.Vector.dist(this.pos, a.pos);
+            if (this != a && d <= this.cohesionRadius) {
+                result.add(a.pos);
+                n++;
+            }
+        }
+        if (n > 0) {
+            result.div(n);
+            result.sub(this.pos);
+            result.setMag(this.cohesionRatio);
+            result.limit(this.maxSteeringForce);
+            this.addForce(result);
+        }
+    }
     align(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;
@@ -164,24 +182,6 @@ class Agent3D {
         if (n > 0) {
             result.div(n);
             result.mult(this.separationRatio);
-            result.limit(this.maxSteeringForce);
-            this.addForce(result);
-        }
-    }
-    cohere(agents) {
-        let result = createVector(0, 0, 0);
-        let n = 0;
-        for (let a of agents) {
-            let d = p5.Vector.dist(this.pos, a.pos);
-            if (this != a && d <= this.cohesionRadius) {
-                result.add(a.pos);
-                n++;
-            }
-        }
-        if (n > 0) {
-            result.div(n);
-            result.sub(this.pos);
-            result.setMag(this.cohesionRatio);
             result.limit(this.maxSteeringForce);
             this.addForce(result);
         }
