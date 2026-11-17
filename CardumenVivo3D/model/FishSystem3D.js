@@ -16,6 +16,7 @@ class FishSystem3D {
         this.acumuladorFitoplancton = 0;
         this.inicializarFitoplancton();
     }
+
     getTrophicLevel(level) {
         let nivel = this.ecosystem.find(nivel => nivel.level === level);
         if (!nivel) {
@@ -24,11 +25,13 @@ class FishSystem3D {
         }
         return nivel;
     }
+
     getFish() {
         return this.ecosystem.flatMap(nivel => nivel.especies)
             .flatMap(especie => especie.beings)
             .filter(ser => ser instanceof Fish);
     }
+
     getSpecie(level, name) {
         const nivel = this.getTrophicLevel(level);
         let especie = nivel.especies.find(especie => especie.name === name);
@@ -38,9 +41,11 @@ class FishSystem3D {
         }
         return especie;
     }
+
     getFitoplancton() {
         return this.getSpecie(1, "Fitoplancton").beings;
     }
+
     cargarJSON(datosJSON, esquema) {
         if (!datosJSON || !Array.isArray(datosJSON.especies)) {
             return;
@@ -59,6 +64,7 @@ class FishSystem3D {
             this.catalogoEspecies.push(especie);
         }
     }
+
     configurarFitoplancton(densidadMaxima, ratioAparicion, tasaBase, minEnergia = 1, maxEnergia = 10) {
         this.densidadMaxima = densidadMaxima;
         this.ratioAparicion = constrain(ratioAparicion, 0, 1);
@@ -67,10 +73,12 @@ class FishSystem3D {
         this.maxEnergiaFito = maxEnergia;
         this.inicializarFitoplancton();
     }
+
     getCapacidadCarga() {
         let volumenBloques = (this.ancho * this.alto * this.depth) / 1e6;
         return Math.max(0, Math.floor(volumenBloques * this.densidadMaxima));
     }
+
     inicializarFitoplancton() {
         this.getFitoplancton().length = 0;
         this.acumuladorFitoplancton = 0;
@@ -83,6 +91,7 @@ class FishSystem3D {
             this.agregarFitoplanctonAleatorio();
         }
     }
+
     agregarFitoplanctonAleatorio() {
         let fito = Fitoplancton.createRandom(
             this.ancho,
@@ -93,13 +102,14 @@ class FishSystem3D {
         );
         this.getSpecie(1, "Fitoplancton").addBeing(fito);
     }
-    eliminarFitoplancton(fito) {
-        const seres = this.getFitoplancton();
-        let indice = seres.indexOf(fito);
+
+    eliminarFitoplancton(fito, especie = this.getSpecie(1, "Fitoplancton")) {
+        let indice = especie.beings.indexOf(fito);
         if (indice !== -1) {
-            seres.splice(indice, 1);
+            especie.beings.splice(indice, 1);
         }
     }
+
     regenerarFitoplancton() {
         let K = this.getCapacidadCarga();
         let N = this.getFitoplancton().length;
@@ -124,42 +134,54 @@ class FishSystem3D {
             this.acumuladorFitoplancton -= nuevos;
         }
     }
+
     cohere() {
         for (let nivel of this.ecosystem) {
             for (let especie of nivel.especies) {
                 const fish = especie.beings.filter(ser => ser instanceof Fish);
                 for (let pez of fish) {
-                    if (!pez.persiguiendo) pez.cohere(fish);
+                    if (!pez.persiguiendo && !pez.huyendo) pez.cohere(fish);
                 }
             }
         }
     }
+
     align() {
         for (let nivel of this.ecosystem) {
             for (let especie of nivel.especies) {
                 const fish = especie.beings.filter(ser => ser instanceof Fish);
                 for (let pez of fish) {
-                    if (!pez.persiguiendo) pez.align(fish);
+                    if (!pez.persiguiendo && !pez.huyendo) pez.align(fish);
                 }
             }
         }
     }
+
     separate() {
         const fish = this.getFish();
         for (let pez of fish) {
             pez.separate(fish);
         }
     }
+
     wander() {
         for (let pez of this.getFish()) {
-            if (!pez.persiguiendo && !pez.huyendo) pez.wander();
+            if (!pez.persiguiendo && !pez.huyendo && !pez.buscandoAlimento) {
+                pez.wander();
+            }
         }
     }
+
     update() {
         this.regenerarFitoplancton();
-        for (let fito of this.getFitoplancton()) {
-            fito.display();
+        const nivelPrimario = this.getTrophicLevel(1);
+
+        for (let especie of nivelPrimario.especies) {
+            for (let fito of especie.beings) {
+                fito.display();
+            }
         }
+
         const todosLosPeces = this.getFish();
 
         for (let nivel of this.ecosystem) {
@@ -179,9 +201,9 @@ class FishSystem3D {
                     } else if (presa !== null) {
                         pez.cazar(presa);
                     } else {
-                        let fitoConsumido = pez.buscarYComerFitoplancton(this.getFitoplancton());
-                        if (fitoConsumido !== null) {
-                            this.eliminarFitoplancton(fitoConsumido);
+                        let consumo = pez.buscarYComerFitoplancton(nivelPrimario);
+                        if (consumo !== null) {
+                            this.eliminarFitoplancton(consumo.fito, consumo.especie);
                         }
                     }
 
@@ -191,6 +213,7 @@ class FishSystem3D {
             }
         }
     }
+
     addRandomFish(count, especie) {
         const grupo = this.getSpecie(especie.nivelTrofico, especie.nombre);
         for (let i = 0; i < count; i++) {
@@ -205,6 +228,7 @@ class FishSystem3D {
             grupo.addBeing(pez);
         }
     }
+
     addMinibanco(count, especie) {
         const grupo = this.getSpecie(especie.nivelTrofico, especie.nombre);
         let dispersionX = Math.min(30, this.ancho / 4);

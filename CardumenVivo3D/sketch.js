@@ -27,7 +27,7 @@ async function cargarEspecies() {
 
         const especie = fishSystem.catalogoEspecies[0];
         if (especie) {
-            fishSystem.addMinibanco(10, especie);
+            fishSystem.addMinibanco(100, especie);
         }
 
         const depredador = fishSystem.catalogoEspecies.find(e => e.nivelTrofico >= 3);

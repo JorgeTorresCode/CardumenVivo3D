@@ -3,7 +3,7 @@ class Fitoplancton {
         this.pos = createVector(x, y, z);
         this.energia = energia;
         
-        const escalaVisual = 1;
+        const escalaVisual = 5;
         this.r = Math.cbrt((3 * this.energia) / (4 * PI)) * escalaVisual;
 
         this.color = color(80, random(200, 255), random(120, 180), 210);

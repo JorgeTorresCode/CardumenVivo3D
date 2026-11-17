@@ -135,15 +135,32 @@ class Agent3D {
     separate(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;
+
         for (let a of agents) {
-            if (this != a && this.pos.dist(a.pos) <= this.separationRadius) {
+            if (this === a) continue;
+
+            let d = this.pos.dist(a.pos);
+            let radioContacto = this.r + a.r;
+
+            if (d < radioContacto) {
+                let dif = d > 0.0001
+                    ? p5.Vector.sub(this.pos, a.pos).normalize()
+                    : p5.Vector.random3D(); 
+
+                // Empuje proporcional 
+                let empuje = 1 - (d / radioContacto);
+                dif.mult(this.mass * empuje * 1.5);
+                this.addForce(dif);
+            }
+            else if (d <= this.separationRadius) {
                 let dif = p5.Vector.sub(this.pos, a.pos);
                 dif.normalize();
-                dif.div(this.pos.dist(a.pos));
+                dif.div(d);
                 result.add(dif);
                 n++;
             }
         }
+
         if (n > 0) {
             result.div(n);
             result.mult(this.separationRatio);
@@ -151,6 +168,7 @@ class Agent3D {
             this.addForce(result);
         }
     }
+
     cohere(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;
