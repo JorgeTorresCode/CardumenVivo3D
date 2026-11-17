@@ -41,7 +41,7 @@ class Agent3D {
         translate(this.pos.x, this.pos.y, this.pos.z);
         sphere(this.r);
         pop();
-    }
+    }   
 
     // TODO
     borders(ancho, alto, profundidad) {
@@ -168,7 +168,6 @@ class Agent3D {
             this.addForce(result);
         }
     }
-
     cohere(agents) {
         let result = createVector(0, 0, 0);
         let n = 0;
