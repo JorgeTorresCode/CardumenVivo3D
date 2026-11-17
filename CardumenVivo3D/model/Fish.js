@@ -159,6 +159,41 @@ class Fish extends Agent3D {
         return null;
     }
 
+    puedeReproducirse() {
+        return !this.isDead() && !this.huyendo && this.energia >= this.especie.umbralReproduccion;
+    }
+
+    intentarReproducirse(companerosEspecie) {
+        if (!this.puedeReproducirse()) {
+            return null;
+        }
+
+        let costoPorPadre = this.especie.energiaInicial * 0.5;
+
+        for (let otro of companerosEspecie) {
+            if (otro === this || !otro.puedeReproducirse()) {
+                continue;
+            }
+
+            let radioEncuentro = (this.r + otro.r) * 2.5;
+            if (this.pos.dist(otro.pos) <= radioEncuentro) {
+                
+                this.energia -= costoPorPadre;
+                otro.energia -= costoPorPadre;
+
+                let puntoMedio = p5.Vector.add(this.pos, otro.pos).mult(0.5);
+                puntoMedio.add(p5.Vector.random3D().mult(this.r));
+
+                let cria = new Fish(puntoMedio.x, puntoMedio.y, puntoMedio.z, this.especie);
+                cria.speed = p5.Vector.add(this.speed, otro.speed).mult(0.5);
+
+                return cria;
+            }
+        }
+
+        return null;
+    }
+
     actualizarEnergia() {
         let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
         let gastoBasal = this.especie.costoMetabolicoBase * dt;
