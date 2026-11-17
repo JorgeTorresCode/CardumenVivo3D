@@ -11,9 +11,9 @@
       "velocidadBase": 2,
       "velocidadRafaga": 6,
       "energiaMaxima": 100,
-      "energiaInicial": 70,
-      "umbralHambre": 65,
-      "umbralReproduccion": 85,
+      "energiaInicial": 100,
+      "umbralHambre": 80,
+      "umbralReproduccion": 82,
       "eficienciaAsimilacion": 0.7,
       "costoMetabolicoBase": 0.12,
       "costoLocomocion": 0.025

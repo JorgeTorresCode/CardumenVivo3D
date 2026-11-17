@@ -191,6 +191,12 @@ class FishSystem3D {
                     }
 
                     pez.update(this.ancho, this.alto, this.depth);
+
+                    let cria = pez.intentarReproducirse(fish);
+                    if (cria !== null) {
+                        especie.addBeing(cria);
+                    }
+
                     pez.display();
                 }
             }
