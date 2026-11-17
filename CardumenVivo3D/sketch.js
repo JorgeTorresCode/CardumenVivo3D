@@ -29,6 +29,11 @@ async function cargarEspecies() {
         if (especie) {
             fishSystem.addMinibanco(10, especie);
         }
+
+        const depredador = fishSystem.catalogoEspecies.find(e => e.nivelTrofico >= 3);
+        if (depredador) {
+            fishSystem.addRandomFish(2, depredador);
+        }
     } catch (error) {
         console.error("No se pudo cargar el catalogo de especies:", error);
     }

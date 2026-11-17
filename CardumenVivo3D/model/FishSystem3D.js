@@ -129,7 +129,7 @@ class FishSystem3D {
             for (let especie of nivel.especies) {
                 const fish = especie.beings.filter(ser => ser instanceof Fish);
                 for (let pez of fish) {
-                    pez.cohere(fish);
+                    if (!pez.persiguiendo) pez.cohere(fish);
                 }
             }
         }
@@ -139,7 +139,7 @@ class FishSystem3D {
             for (let especie of nivel.especies) {
                 const fish = especie.beings.filter(ser => ser instanceof Fish);
                 for (let pez of fish) {
-                    pez.align(fish);
+                    if (!pez.persiguiendo) pez.align(fish);
                 }
             }
         }
@@ -152,7 +152,7 @@ class FishSystem3D {
     }
     wander() {
         for (let pez of this.getFish()) {
-            pez.wander();
+            if (!pez.persiguiendo && !pez.huyendo) pez.wander();
         }
     }
     update() {
@@ -160,6 +160,8 @@ class FishSystem3D {
         for (let fito of this.getFitoplancton()) {
             fito.display();
         }
+        const todosLosPeces = this.getFish();
+
         for (let nivel of this.ecosystem) {
             for (let especie of nivel.especies) {
                 const fish = especie.beings.filter(ser => ser instanceof Fish);
@@ -168,10 +170,19 @@ class FishSystem3D {
                         especie.beings.splice(especie.beings.indexOf(pez), 1);
                         continue;
                     }
+                    
+                    pez.reiniciarEstado();
+                    let { amenaza, presa } = pez.percibir(todosLosPeces);
 
-                    let fitoConsumido = pez.buscarYComerFitoplancton(this.getFitoplancton());
-                    if (fitoConsumido !== null) {
-                        this.eliminarFitoplancton(fitoConsumido);
+                    if (amenaza !== null) {
+                        pez.huir(amenaza);
+                    } else if (presa !== null) {
+                        pez.cazar(presa);
+                    } else {
+                        let fitoConsumido = pez.buscarYComerFitoplancton(this.getFitoplancton());
+                        if (fitoConsumido !== null) {
+                            this.eliminarFitoplancton(fitoConsumido);
+                        }
                     }
 
                     pez.update(this.ancho, this.alto, this.depth);

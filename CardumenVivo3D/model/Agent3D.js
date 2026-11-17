@@ -8,7 +8,7 @@ class Agent3D {
 
         this.r = Math.cbrt((3 * this.mass) / (4 * PI));
 
-        this.maxSteeringForce = 0.08;
+        this.maxSteeringForce = 0.4;
         this.maxSpeed = 2;
         this.arrivalDist = 100;
 

@@ -11,12 +11,30 @@
       "velocidadBase": 2,
       "velocidadRafaga": 4.8,
       "energiaMaxima": 100,
-      "energiaInicial": 60,
+      "energiaInicial": 75,
       "umbralHambre": 65,
       "umbralReproduccion": 85,
       "eficienciaAsimilacion": 0.7,
       "costoMetabolicoBase": 0.12,
       "costoLocomocion": 0.025
+    },
+    {
+      "nombre": "Jurel (Trachurus murphyi)",
+      "color": [90, 110, 150],
+      "nivelTrofico": 3.5,
+      "espectroTrofico": [2, 3],
+      "tamano": 2.5,
+      "radius": 37.5,
+      "radioPercepcion": 300,
+      "velocidadBase": 2.4,
+      "velocidadRafaga": 5.5,
+      "energiaMaxima": 250,
+      "energiaInicial": 200,
+      "umbralHambre": 180,
+      "umbralReproduccion": 220,
+      "eficienciaAsimilacion": 0.6,
+      "costoMetabolicoBase": 0.3,
+      "costoLocomocion": 0.04
     }
   ]
 }

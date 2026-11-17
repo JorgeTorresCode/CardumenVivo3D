@@ -1,4 +1,10 @@
 class Fish extends Agent3D {
+    // Parametros de la regla de depredacion (antecedentes 1 y 3)
+    static PROPORCION_TAMANO_MAX = 0.5;   // L_presa / L_depredador <= τ 
+    static DIFERENCIA_TROFICA_MIN = 0.5;  // diferencia minima de nivel trofico
+    static INTENSIDAD_HUIDA = 3;          // μ_flee (Klamser y Romanczuk)
+    static INTENSIDAD_CAZA = 3;           // Multiplica el maxSteeringForce del depredador al perseguir. 
+
     constructor(x, y, z, especie) {
         super(x, y, z, especie.tamano * 10);
 
@@ -6,10 +12,15 @@ class Fish extends Agent3D {
 
         this.tamano = especie.tamano;
         this.energia = especie.energiaInicial;
+        this.maxSpeed = especie.velocidadBase;
+
+        // Estados que se recalculan en cada frame
+        this.persiguiendo = false;
+        this.huyendo = false;
 
         this.esDepredador = especie.nivelTrofico >= 3.0;
         this.r = 15 * this.tamano;
-        
+
         this.tiempoCola = 0;
         this.direccionAnterior = createVector(1, 0, 0);
     }
@@ -27,6 +38,77 @@ class Fish extends Agent3D {
     tieneHambre() {
         return this.energia < this.especie.umbralHambre;
     }
+    reiniciarEstado() {
+        this.persiguiendo = false;
+        this.huyendo = false;
+        this.maxSpeed = this.especie.velocidadBase;
+    }
+    puedeCazar(otro) {
+        if (otro === this || otro.isDead() || otro.especie.nombre === this.especie.nombre) {
+            return false;
+        }
+        let [minTL, maxTL] = this.especie.espectroTrofico;
+        let tlPresa = otro.especie.nivelTrofico;
+
+        let enEspectro = tlPresa >= minTL && tlPresa <= maxTL;
+        let difTrofica = this.especie.nivelTrofico - tlPresa >= Fish.DIFERENCIA_TROFICA_MIN;
+        let proporcion = otro.tamano / this.tamano <= Fish.PROPORCION_TAMANO_MAX;
+
+        return enEspectro && difTrofica && proporcion;
+    }
+    // Un solo recorrido: encuentra la amenaza y la presa mas cercanas
+    percibir(peces) {
+        let amenaza = null;
+        let presa = null;
+        let radio = this.especie.radioPercepcion;
+        let distAmenaza = radio;
+        let distPresa = radio;
+        let buscaPresa = this.tieneHambre();
+
+        for (let otro of peces) {
+            if (otro === this || otro.isDead()) continue;
+
+            let d = this.pos.dist(otro.pos);
+            if (d >= radio) continue;
+
+            if (d < distAmenaza && otro.puedeCazar(this)) {
+                distAmenaza = d;
+                amenaza = otro;
+            } else if (buscaPresa && d < distPresa && this.puedeCazar(otro)) {
+                distPresa = d;
+                presa = otro;
+            }
+        }
+        return { amenaza, presa };
+    }
+    huir(amenaza) {
+        this.huyendo = true;
+        this.maxSpeed = this.especie.velocidadRafaga;
+
+        // flee
+        let deseada = p5.Vector.sub(this.pos, amenaza.pos);
+        deseada.setMag(this.maxSpeed);
+        let steering = p5.Vector.sub(deseada, this.speed);
+        steering.limit(this.maxSteeringForce * Fish.INTENSIDAD_HUIDA);
+        this.addForce(steering);
+    }
+    cazar(presa) {
+        this.persiguiendo = true;
+        this.maxSpeed = this.especie.velocidadRafaga;
+
+        if (this.pos.dist(presa.pos) <= this.r + presa.r) {
+            let energiaGanada = presa.energia * this.especie.eficienciaAsimilacion;
+            this.energia = Math.min(this.especie.energiaMaxima, this.energia + energiaGanada);
+            presa.energia = 0; // la elimina el isDead() de FishSystem3D.update()
+        } else {
+            // seek con la fuerza de giro reforzada por INTENSIDAD_CAZA
+            let deseada = p5.Vector.sub(presa.pos, this.pos);
+            deseada.setMag(this.maxSpeed);
+            let steering = p5.Vector.sub(deseada, this.speed);
+            steering.limit(this.maxSteeringForce * Fish.INTENSIDAD_CAZA);
+            this.addForce(steering);
+        }
+    }
     buscarYComerFitoplancton(listaFitoplancton) {
         if (!this.puedeComerFitoplancton() || !this.tieneHambre() || listaFitoplancton.length === 0) {
             return null;
@@ -43,13 +125,15 @@ class Fish extends Agent3D {
             }
         }
 
+        this.persiguiendo = fitoMasCercano !== null;
+
         if (fitoMasCercano !== null) {
             let radioContacto = this.r + fitoMasCercano.r;
 
             if (distMinima <= radioContacto) {
                 let energiaGanada = fitoMasCercano.energia * this.especie.eficienciaAsimilacion;
                 this.energia = Math.min(this.especie.energiaMaxima, this.energia + energiaGanada);
-                return fitoMasCercano; 
+                return fitoMasCercano;
             } else {
                 this.seek(fitoMasCercano.pos);
             }

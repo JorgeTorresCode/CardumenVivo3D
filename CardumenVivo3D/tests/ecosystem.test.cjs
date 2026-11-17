@@ -6,7 +6,7 @@ const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 const leer = archivo => fs.readFileSync(path.join(__dirname, "..", archivo), "utf8");
-const especie = JSON.parse(leer("data/species.json")).especies[0];
+const [especie, depredador] = JSON.parse(leer("data/species.json")).especies;
 const esquema = JSON.parse(leer("data/species.schema.json"));
 
 // Solo se simula el entorno p5; se usan las clases y la validacion reales.
@@ -227,8 +227,9 @@ test("el arranque del sketch carga especies y crea el minibanco en ecosystem", a
     contexto.fetch = async url => ({ ok: true, json: async () => JSON.parse(leer(url)) });
     vm.runInContext(leer("sketch.js"), contexto);
     await vm.runInContext("fishSystem = sistema; cargarEspecies();", contexto);
-    assert.equal(sistema.getFish().length, 10);
     assert.equal(sistema.getSpecie(especie.nivelTrofico, especie.nombre).beings.length, 10);
+    assert.equal(sistema.getSpecie(depredador.nivelTrofico, depredador.nombre).beings.length, 2);
+    assert.equal(sistema.getFish().length, 12);
 });
 
 test("cargas repetidas y creacion reutilizan el grupo sin perder organismos", () => {
@@ -266,4 +267,53 @@ test("regenerar fitoplancton conserva la lista original y las otras especies", (
     assert.equal(sistema.getFitoplancton(), listaOriginal);
     assert.equal(listaOriginal.length, 50);
     assert.equal(grupoPeces.beings.length, 2);
+});
+
+test("puedeCazar aplica espectro, diferencia trofica y proporcion de tamano", () => {
+    const jurel = new Fish(0, 0, 0, depredador);
+    const sardina = new Fish(0, 0, 0, especie);
+    assert.equal(jurel.puedeCazar(sardina), true);
+    assert.equal(sardina.puedeCazar(jurel), false);
+    assert.equal(jurel.puedeCazar(new Fish(0, 0, 0, depredador)), false); // misma especie
+    assert.equal(jurel.puedeCazar(new Fish(0, 0, 0, { ...especie, tamano: 2 })), false); // muy grande
+    assert.equal(jurel.puedeCazar(new Fish(0, 0, 0, { ...especie, nombre: "Otra", nivelTrofico: 3.2 })), false); // poca diferencia
+    sardina.energia = 0;
+    assert.equal(jurel.puedeCazar(sardina), false); // ya muerta
+});
+
+test("un depredador con hambre se come a la presa que toca y esta se elimina", () => {
+    const sistema = new FishSystem3D(1000, 1000, 1000);
+    const sardina = new Fish(10, 0, 0, especie);
+    const jurel = new Fish(0, 0, 0, depredador);
+    jurel.energia = 100;
+    sistema.getSpecie(especie.nivelTrofico, especie.nombre).addBeing(sardina);
+    sistema.getSpecie(depredador.nivelTrofico, depredador.nombre).addBeing(jurel);
+    const energiaSardina = sardina.energia;
+    sistema.update();
+    assert.ok(sardina.isDead());
+    assert.ok(jurel.energia > 100 + energiaSardina * depredador.eficienciaAsimilacion - 1);
+    sistema.update();
+    assert.equal(sistema.getSpecie(especie.nivelTrofico, especie.nombre).beings.length, 0);
+});
+
+test("la presa huye en rafaga y deja de agruparse solo cuando persigue comida", () => {
+    const sistema = new FishSystem3D(1000, 1000, 1000);
+    const sardina = new Fish(100, 0, 0, especie);
+    const jurel = new Fish(0, 0, 0, depredador); // sin hambre: no persigue
+    sistema.getSpecie(especie.nivelTrofico, especie.nombre).addBeing(sardina);
+    sistema.getSpecie(depredador.nivelTrofico, depredador.nombre).addBeing(jurel);
+    sistema.update();
+    assert.equal(sardina.huyendo, true);
+    assert.equal(sardina.maxSpeed, especie.velocidadRafaga);
+    assert.ok(sardina.pos.x > 100); // se aleja del depredador
+    assert.equal(jurel.persiguiendo, false);
+    assert.equal(jurel.maxSpeed, depredador.velocidadBase);
+
+    let cohesiones = 0;
+    sardina.cohere = () => cohesiones++;
+    sistema.cohere();
+    assert.equal(cohesiones, 1); // al huir conserva la cohesion
+    sardina.persiguiendo = true;
+    sistema.cohere();
+    assert.equal(cohesiones, 1); // al perseguir comida la suelta
 });
