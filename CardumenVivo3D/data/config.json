@@ -1,0 +1,26 @@
+{
+  "sistema": {
+    "caja": {
+      "ancho": 2400,
+      "alto": 1200,
+      "profundidad": 2400
+    },
+    "fitoplancton": {
+      "densidadMaxima": 0.05,
+      "ratioAparicionPorcentaje": 50,
+      "tasaBase": 0.08,
+      "minEnergia": 1,
+      "maxEnergia": 10
+    }
+  },
+  "poblacion": {
+    "Sardina del Pacifico (Sardinops sagax)": {
+      "bancos": 1,
+      "individuosPorBanco": 100
+    },
+    "Jurel (Trachurus murphyi)": {
+      "bancos": 2,
+      "individuosPorBanco": 1
+    }
+  }
+}

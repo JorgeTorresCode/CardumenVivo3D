@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardumenVivo3D · Configuracion</title>
+    <link rel="stylesheet" href="css/config.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/ajv-dist@8.17.1/dist/ajv2020.bundle.js"></script>
+    <script src="Model/Configuracion.js"></script>
+</head>
+<body>
+    <header class="cabecera">
+        <div>
+            <h1>CardumenVivo3D</h1>
+            <p class="subtitulo">Configuracion inicial del ecosistema</p>
+        </div>
+        <p id="estado" class="estado" role="status"></p>
+    </header>
+
+    <main>
+        <p id="errorCarga" class="error-carga" hidden></p>
+
+        <section class="panel" aria-labelledby="tituloSistema">
+            <h2 id="tituloSistema">Sistema</h2>
+
+            <div class="grupos">
+                <fieldset>
+                    <legend>Caja</legend>
+                    <label class="campo">
+                        <span>Ancho</span>
+                        <input type="number" data-sistema="caja.ancho" step="100" min="400">
+                        <small class="error" data-error-sistema="caja.ancho"></small>
+                    </label>
+                    <label class="campo">
+                        <span>Alto</span>
+                        <input type="number" data-sistema="caja.alto" step="100" min="400">
+                        <small class="error" data-error-sistema="caja.alto"></small>
+                    </label>
+                    <label class="campo">
+                        <span>Profundidad</span>
+                        <input type="number" data-sistema="caja.profundidad" step="100" min="400">
+                        <small class="error" data-error-sistema="caja.profundidad"></small>
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Fitoplancton</legend>
+                    <label class="campo">
+                        <span>Densidad maxima <em>por bloque de 100³</em></span>
+                        <input type="number" data-sistema="fitoplancton.densidadMaxima" step="0.01" min="0">
+                        <small class="error" data-error-sistema="fitoplancton.densidadMaxima"></small>
+                    </label>
+                    <label class="campo">
+                        <span>Ratio de aparicion <em>%</em></span>
+                        <input type="number" data-sistema="fitoplancton.ratioAparicionPorcentaje" step="5" min="0" max="100">
+                        <small class="error" data-error-sistema="fitoplancton.ratioAparicionPorcentaje"></small>
+                    </label>
+                    <label class="campo">
+                        <span>Tasa base de regeneracion</span>
+                        <input type="number" data-sistema="fitoplancton.tasaBase" step="0.01" min="0">
+                        <small class="error" data-error-sistema="fitoplancton.tasaBase"></small>
+                    </label>
+                    <label class="campo">
+                        <span>Energia minima</span>
+                        <input type="number" data-sistema="fitoplancton.minEnergia" step="0.5" min="0">
+                        <small class="error" data-error-sistema="fitoplancton.minEnergia"></small>
+                    </label>
+                    <label class="campo">
+                        <span>Energia maxima</span>
+                        <input type="number" data-sistema="fitoplancton.maxEnergia" step="0.5" min="0">
+                        <small class="error" data-error-sistema="fitoplancton.maxEnergia"></small>
+                    </label>
+                </fieldset>
+
+                <aside class="resumen" aria-live="polite">
+                    <h3>Resultado</h3>
+                    <dl>
+                        <dt>Capacidad de carga</dt>
+                        <dd id="capacidadCarga">–</dd>
+                        <dt>Fitoplancton inicial</dt>
+                        <dd id="fitoInicial">–</dd>
+                        <dt>Peces al iniciar</dt>
+                        <dd id="totalPeces">–</dd>
+                    </dl>
+                    <ul id="avisosSistema" class="avisos"></ul>
+                </aside>
+            </div>
+        </section>
+
+        <section class="panel" aria-labelledby="tituloEspecies">
+            <div class="panel-cabecera">
+                <h2 id="tituloEspecies">Especies</h2>
+                <button type="button" id="botonNueva" class="boton">+ Nueva especie</button>
+            </div>
+
+            <div class="tabla-contenedor">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th scope="col">Especie</th>
+                            <th scope="col" class="num">Nivel trofico</th>
+                            <th scope="col" class="num">Espectro</th>
+                            <th scope="col" class="num">Tamano</th>
+                            <th scope="col" class="num">Bancos</th>
+                            <th scope="col" class="num">Individuos por banco</th>
+                            <th scope="col" class="num">Total</th>
+                            <th scope="col"><span class="oculto">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+                <p id="tablaVacia" class="tabla-vacia" hidden>No hay especies. Crea una con “Nueva especie”.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="acciones">
+        <div class="acciones-secundarias">
+            <button type="button" id="botonExportarEspecies" class="boton">Exportar especies</button>
+            <button type="button" id="botonExportarSistema" class="boton">Exportar configuracion</button>
+            <button type="button" id="botonImportar" class="boton">Importar JSON</button>
+            <input type="file" id="archivoImportar" accept=".json,application/json" hidden>
+            <button type="button" id="botonRestaurar" class="boton boton-peligro">Restaurar valores por defecto</button>
+        </div>
+        <button type="button" id="botonIniciar" class="boton boton-principal">Iniciar simulacion</button>
+    </footer>
+
+    <dialog id="dialogoEspecie" aria-labelledby="tituloDialogo">
+        <form id="formEspecie" method="dialog" novalidate>
+            <h2 id="tituloDialogo">Especie</h2>
+            <div id="camposEspecie" class="campos-especie"></div>
+            <p id="erroresGenerales" class="error"></p>
+            <div class="dialogo-botones">
+                <button type="button" id="botonCancelar" class="boton">Cancelar</button>
+                <button type="submit" class="boton boton-principal">Guardar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="config.js"></script>
+</body>
+</html>
