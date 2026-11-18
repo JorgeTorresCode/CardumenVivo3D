@@ -9,7 +9,7 @@
       "radius": 15,
       "radioPercepcion": 300,
       "velocidadBase": 2,
-      "velocidadRafaga": 6,
+      "velocidadRafaga": 4.8,
       "energiaMaxima": 100,
       "energiaInicial": 100,
       "umbralHambre": 80,
