@@ -229,12 +229,15 @@ class FishSystem3D {
         let dispersionX = Math.min(30, this.ancho / 4);
         let dispersionY = Math.min(30, this.alto / 4);
         let dispersionZ = Math.min(30, this.depth / 4);
-        let margenX = Math.min(150, this.ancho / 2 - dispersionX);
-        let margenY = Math.min(100, this.alto / 2 - dispersionY);
-        let margenZ = Math.min(150, this.depth / 2 - dispersionZ);
-        let centroX = random(-margenX, margenX);
-        let centroY = random(-margenY, margenY);
-        let centroZ = random(-margenZ, margenZ);
+        // Centro en cualquier punto de la caja, lejos de las paredes
+        // (Agent3D.borders empuja a los peces a menos de 150 de una pared)
+        let margenParedes = 150;
+        let rangoX = Math.max(0, this.ancho / 2 - margenParedes - dispersionX);
+        let rangoY = Math.max(0, this.alto / 2 - margenParedes - dispersionY);
+        let rangoZ = Math.max(0, this.depth / 2 - margenParedes - dispersionZ);
+        let centroX = random(-rangoX, rangoX);
+        let centroY = random(-rangoY, rangoY);
+        let centroZ = random(-rangoZ, rangoZ);
 
         let velocidadBase = p5.Vector.random3D();
         velocidadBase.mult(2);

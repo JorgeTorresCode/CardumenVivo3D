@@ -1,9 +1,5 @@
 class Fish extends Agent3D {
-    // Parametros de la regla de depredacion (antecedentes 1 y 3)
-    static PROPORCION_TAMANO_MAX = 0.5;   // L_presa / L_depredador <= τ 
-    static DIFERENCIA_TROFICA_MIN = 0.5;  // diferencia minima de nivel trofico
-    static INTENSIDAD_HUIDA = 3;          // μ_flee (Klamser y Romanczuk)
-    static INTENSIDAD_CAZA = 3;           // Multiplica el maxSteeringForce del depredador al perseguir. 
+    
 
     constructor(x, y, z, especie) {
         super(x, y, z, especie.tamano * 10);
@@ -58,8 +54,8 @@ class Fish extends Agent3D {
         let tlPresa = otro.especie.nivelTrofico;
 
         let enEspectro = tlPresa >= minTL && tlPresa <= maxTL;
-        let difTrofica = this.especie.nivelTrofico - tlPresa >= Fish.DIFERENCIA_TROFICA_MIN;
-        let proporcion = otro.tamano / this.tamano <= Fish.PROPORCION_TAMANO_MAX;
+        let difTrofica = this.especie.nivelTrofico - tlPresa >= 0.5;
+        let proporcion = otro.tamano / this.tamano <= 0.5;
 
         return enEspectro && difTrofica && proporcion;
     }
@@ -100,7 +96,7 @@ class Fish extends Agent3D {
         deseada.add(p5.Vector.random3D().mult(this.maxSpeed * 0.25));
 
         let steering = p5.Vector.sub(deseada, this.speed);
-        steering.limit(this.maxSteeringForce * Fish.INTENSIDAD_HUIDA);
+        steering.limit(this.maxSteeringForce * 3);
         this.addForce(steering);
     }
 
@@ -113,11 +109,11 @@ class Fish extends Agent3D {
             this.energia = Math.min(this.especie.energiaMaxima, this.energia + energiaGanada);
             presa.energia = 0; // la elimina el isDead() de FishSystem3D.update()
         } else {
-            // seek con la fuerza de giro reforzada por INTENSIDAD_CAZA
+            // seek con la fuerza de giro reforzada
             let deseada = p5.Vector.sub(presa.pos, this.pos);
             deseada.setMag(this.maxSpeed);
             let steering = p5.Vector.sub(deseada, this.speed);
-            steering.limit(this.maxSteeringForce * Fish.INTENSIDAD_CAZA);
+            steering.limit(this.maxSteeringForce * 3);
             this.addForce(steering);
         }
     }

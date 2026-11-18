@@ -1,4 +1,4 @@
-let fishSystem;
+let fishSystem = null;
 const paso = 1 / 60;
 let acumulado = 0;
 let pasosSimulados = 0;
@@ -10,48 +10,58 @@ function setup() {
     createCanvas(acuario.clientWidth, acuario.clientHeight, WEBGL).parent(acuario);
     panel = new PanelPoblacion();
     FishDrawer.inicializarGeometrias();
-    fishSystem = new FishSystem3D(2400, 2400, 1200);
-
-    // (densidadMaxima, ratioAparicion %, tasaBase, minEnergia, maxEnergia)
-    fishSystem.configurarFitoplancton(0.05, 0.5, 0.08, 1, 10);
-    cargarEspecies();
+    cargarSimulacion();
 }
 
-async function cargarEspecies() {
+// Lee la configuracion de index.html (localStorage) o, si no hay, la de data/
+async function cargarSimulacion() {
     try {
-        const [respuestaDatos, respuestaEsquema] = await Promise.all([
-            fetch("data/species.json"),
-            fetch("data/species.schema.json")
-        ]);
-        if (!respuestaDatos.ok)
-            throw new Error(`HTTP ${respuestaDatos.status} al cargar las especies`);
+        const respuestaEsquema = await fetch("data/species.schema.json");
         if (!respuestaEsquema.ok)
             throw new Error(`HTTP ${respuestaEsquema.status} al cargar el esquema de especies`);
-        const [datos, esquema] = await Promise.all([
-            respuestaDatos.json(),
-            respuestaEsquema.json()
-        ]);
-        fishSystem.cargarJSON(datos, esquema);
+        const esquema = await respuestaEsquema.json();
 
-        const especie = fishSystem.catalogoEspecies[0];
-        if (especie) {
-            fishSystem.addMinibanco(100, especie);
+        let { config } = await Configuracion.cargar();
+        if (Object.keys(Configuracion.validarSistema(config.sistema)).length > 0) {
+            console.warn("La configuracion guardada no es valida; se usan los valores por defecto.");
+            config = await Configuracion.cargarArchivos();
         }
-
-        const depredador = fishSystem.catalogoEspecies.find(e => e.nivelTrofico >= 3);
-        if (depredador) {
-            fishSystem.addRandomFish(2, depredador);
-        }
-        panel.registrar(0, fishSystem.obtenerPoblaciones());
-        document.getElementById("estado").hidden = true;
-        escenarioListo = true;
+        fishSystem = crearSistema(config, esquema);
     } catch (error) {
-        document.getElementById("estado").textContent = "No se pudo cargar el catálogo de especies.";
-        console.error("No se pudo cargar el catalogo de especies:", error);
+        console.error("No se pudo cargar la configuracion:", error);
     }
 }
 
+function crearSistema(config, esquema) {
+    const { caja, fitoplancton } = config.sistema;
+
+    // El constructor recibe (profundidad, ancho, alto)
+    const sistema = new FishSystem3D(caja.profundidad, caja.ancho, caja.alto);
+    sistema.configurarFitoplancton(
+        fitoplancton.densidadMaxima,
+        fitoplancton.ratioAparicionPorcentaje / 100,
+        fitoplancton.tasaBase,
+        fitoplancton.minEnergia,
+        fitoplancton.maxEnergia
+    );
+    sistema.cargarJSON({ especies: config.especies }, esquema);
+
+    for (let especie of sistema.catalogoEspecies) {
+        const poblacion = config.poblacion[especie.nombre];
+        if (!poblacion) continue;
+        for (let i = 0; i < poblacion.bancos; i++) {
+            sistema.addMinibanco(poblacion.individuosPorBanco, especie);
+        }
+    }
+    return sistema;
+}
+
 function draw() {
+    if (fishSystem === null) {
+        background(20, 40, 60);
+        return;
+    }
+
     // Recuperar como maximo 0.1 s tras una pausa; descartar el exceso.
     if (escenarioListo) acumulado += Math.min(Math.max(0, deltaTime / 1000), 0.1);
     while (acumulado >= paso) {
