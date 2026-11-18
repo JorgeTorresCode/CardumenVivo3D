@@ -1,5 +1,5 @@
 class Fish extends Agent3D {
-    
+    static PROBABILIDAD_REPRODUCCION = 0.35; 
 
     constructor(x, y, z, especie) {
         super(x, y, z, especie.tamano * 10);
@@ -160,6 +160,8 @@ class Fish extends Agent3D {
             return null;
         }
 
+        let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
+        let probFrame = Fish.PROBABILIDAD_REPRODUCCION * dt;
         let costoPorPadre = this.especie.energiaInicial * 0.5;
 
         for (let otro of companerosEspecie) {
@@ -169,7 +171,10 @@ class Fish extends Agent3D {
 
             let radioEncuentro = (this.r + otro.r) * 2.5;
             if (this.pos.dist(otro.pos) <= radioEncuentro) {
-                
+                if (random() >= probFrame) {
+                    continue;
+                }
+
                 this.energia -= costoPorPadre;
                 otro.energia -= costoPorPadre;
 
