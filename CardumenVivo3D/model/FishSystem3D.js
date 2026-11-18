@@ -42,6 +42,11 @@ class FishSystem3D {
     getFitoplancton() {
         return this.getSpecie(1, "Fitoplancton").beings;
     }
+    obtenerPoblaciones() {
+        return this.ecosystem.flatMap(nivel => nivel.especies.map(especie => ({
+            nivel: nivel.level, nombre: especie.name, cantidad: especie.beings.length
+        })));
+    }
     cargarJSON(datosJSON, esquema) {
         if (!datosJSON || !Array.isArray(datosJSON.especies)) {
             return;

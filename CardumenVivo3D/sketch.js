@@ -1,9 +1,14 @@
 let fishSystem;
 const paso = 1 / 60;
 let acumulado = 0;
+let pasosSimulados = 0;
+let panel;
+let escenarioListo = false;
 
 function setup() {
-    createCanvas(windowWidth - 5, windowHeight - 5, WEBGL);
+    const acuario = document.getElementById("acuario");
+    createCanvas(acuario.clientWidth, acuario.clientHeight, WEBGL).parent(acuario);
+    panel = new PanelPoblacion();
     FishDrawer.inicializarGeometrias();
     fishSystem = new FishSystem3D(2400, 2400, 1200);
 
@@ -37,16 +42,24 @@ async function cargarEspecies() {
         if (depredador) {
             fishSystem.addRandomFish(2, depredador);
         }
+        panel.registrar(0, fishSystem.obtenerPoblaciones());
+        document.getElementById("estado").hidden = true;
+        escenarioListo = true;
     } catch (error) {
+        document.getElementById("estado").textContent = "No se pudo cargar el catálogo de especies.";
         console.error("No se pudo cargar el catalogo de especies:", error);
     }
 }
 
 function draw() {
     // Recuperar como maximo 0.1 s tras una pausa; descartar el exceso.
-    acumulado += Math.min(Math.max(0, deltaTime / 1000), 0.1);
+    if (escenarioListo) acumulado += Math.min(Math.max(0, deltaTime / 1000), 0.1);
     while (acumulado >= paso) {
         fishSystem.simular(paso);
+        pasosSimulados++;
+        if (pasosSimulados % 60 === 0) {
+            panel.registrar(pasosSimulados / 60, fishSystem.obtenerPoblaciones());
+        }
         acumulado -= paso;
     }
 
@@ -61,4 +74,9 @@ function draw() {
     pop();
 
     fishSystem.display();
+}
+
+function windowResized() {
+    const acuario = document.getElementById("acuario");
+    resizeCanvas(acuario.clientWidth, acuario.clientHeight);
 }

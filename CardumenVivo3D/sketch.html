@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,8 +18,20 @@
     <script src="structures/Specie.js"></script>
     <script src="model/Fish.js"></script>
     <script src="model/FishSystem3D.js"></script>
+    <script src="ui/PanelPoblacion.js"></script>
 </head>
 <body>
+    <main>
+        <section id="acuario" aria-label="Acuario tridimensional"></section>
+        <aside class="panel" aria-labelledby="titulo-poblacion">
+            <h1 id="titulo-poblacion">Población</h1>
+            <p class="reloj">Tiempo simulado <span id="tiempo">00:00</span></p>
+            <table aria-label="Individuos por especie">
+                <tbody id="poblaciones"></tbody>
+            </table>
+            <p id="estado" role="status">Cargando especies…</p>
+        </aside>
+    </main>
     <script src="sketch.js"></script>
 </body>
 </html>
