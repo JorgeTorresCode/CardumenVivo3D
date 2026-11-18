@@ -17,7 +17,6 @@
     "nivelTrofico",
     "espectroTrofico",
     "tamano",
-    "radius",
     "radioPercepcion",
     "velocidadBase",
     "velocidadRafaga",
@@ -75,11 +74,6 @@
       "type": "number",
       "exclusiveMinimum": 0,
       "description": "Tamano de los peces de la especie."
-    },
-    "radius": {
-      "type": "number",
-      "exclusiveMinimum": 0,
-      "description": "Radio de los peces de la especie."
     },
     "radioPercepcion": {
       "type": "number",

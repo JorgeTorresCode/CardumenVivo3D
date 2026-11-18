@@ -21,11 +21,18 @@ class Configuracion {
         return JSON.parse(JSON.stringify(objeto));
     }
 
+    // Los catálogos anteriores guardaban el radio que Fish ahora calcula desde tamano.
+    static migrarEspecie(especie) {
+        if (!especie || !Object.hasOwn(especie, "radius")) return especie;
+        const { radius, ...actual } = especie;
+        return actual;
+    }
+
     static crear(sistema, especies, poblacion = {}) {
         const config = {
             version: Configuracion.VERSION,
             sistema: Configuracion.clonar(sistema),
-            especies: Configuracion.clonar(especies),
+            especies: Configuracion.clonar(especies.map(Configuracion.migrarEspecie)),
             poblacion: Configuracion.clonar(poblacion)
         };
         Configuracion.completarPoblacion(config);
@@ -93,6 +100,7 @@ class Configuracion {
             if (config?.version !== Configuracion.VERSION || !config.sistema || !Array.isArray(config.especies)) {
                 return null;
             }
+            config.especies = config.especies.map(Configuracion.migrarEspecie);
             config.poblacion = config.poblacion ?? {};
             return Configuracion.completarPoblacion(config);
         } catch (error) {
@@ -319,7 +327,8 @@ class Configuracion {
         if (Array.isArray(datos.especies)) {
             reconocido = true;
             const aceptadas = [];
-            for (let especie of datos.especies) {
+            for (const entrada of datos.especies) {
+                const especie = Configuracion.migrarEspecie(entrada);
                 const errores = Configuracion.validarEspecie(especie, validarEsquema, aceptadas);
                 if (Object.keys(errores).length > 0) {
                     resultado.descartadas.push({ nombre: especie?.nombre ?? "(sin nombre)", errores });

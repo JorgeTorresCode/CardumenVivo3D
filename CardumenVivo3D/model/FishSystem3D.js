@@ -53,7 +53,8 @@ class FishSystem3D {
         }
 
         const validarEspecie = new ajv2020().compile(esquema);
-        for (let especie of datosJSON.especies) {
+        for (const entrada of datosJSON.especies) {
+            const especie = Configuracion.migrarEspecie(entrada);
             if (!validarEspecie(especie)) {
                 console.log(
                     "Especie descartada:", especie?.nombre ?? "(sin nombre)",

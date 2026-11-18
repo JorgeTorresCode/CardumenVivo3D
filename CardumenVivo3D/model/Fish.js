@@ -7,6 +7,7 @@ class Fish extends Agent3D {
         this.especie = especie;
 
         this.tamano = especie.tamano;
+        this.r = 15 * this.tamano;
         this.energia = especie.energiaInicial;
         this.maxSpeed = especie.velocidadBase;
 
@@ -16,7 +17,6 @@ class Fish extends Agent3D {
         this.buscandoAlimento = false;
 
         this.esDepredador = especie.nivelTrofico >= 3.0;
-        this.r = especie.radius;
 
         this.tiempoCola = 0;
         this.direccionAnterior = createVector(1, 0, 0);

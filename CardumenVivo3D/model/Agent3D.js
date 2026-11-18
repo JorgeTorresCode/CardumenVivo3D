@@ -43,11 +43,10 @@ class Agent3D {
         pop();
     }   
 
-    // TODO
     borders(ancho, alto, profundidad) {
-        const w = ancho / 2 - this.r;
-        const h = alto / 2 - this.r;
-        const d = profundidad / 2 - this.r;
+        const w = Math.max(0, ancho / 2 - this.r);
+        const h = Math.max(0, alto / 2 - this.r);
+        const d = Math.max(0, profundidad / 2 - this.r);
         const margen = 150;
 
         const fuerza = createVector(0, 0, 0);
@@ -65,6 +64,17 @@ class Agent3D {
         if (this.pos.z < -d + margen) fuerza.z += empuje(this.pos.z + d);
 
         this.addForce(fuerza);
+
+        this.limitarEje("x", w);
+        this.limitarEje("y", h);
+        this.limitarEje("z", d);
+    }
+    limitarEje(eje, limite) {
+        this.pos[eje] = constrain(this.pos[eje], -limite, limite);
+        if ((this.pos[eje] >= limite && this.speed[eje] > 0) ||
+            (this.pos[eje] <= -limite && this.speed[eje] < 0)) {
+            this.speed[eje] = 0;
+        }
     }
     addForce(f) {
         let force = p5.Vector.div(f, this.mass);
