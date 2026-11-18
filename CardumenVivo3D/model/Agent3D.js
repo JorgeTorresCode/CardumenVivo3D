@@ -116,38 +116,38 @@ class Agent3D {
         r.add(this.pos);
         this.seek(r);
     }
-    cohere(agents) {
-        let result = createVector(0, 0, 0);
-        let n = 0;
+    cohereAndAlign(agents) {
+        const cohesion = createVector(0, 0, 0);
+        const alineacion = createVector(0, 0, 0);
+        let vecinosCohesion = 0;
+        let vecinosAlineacion = 0;
+
         for (let a of agents) {
-            let d = p5.Vector.dist(this.pos, a.pos);
-            if (this != a && d <= this.cohesionRadius) {
-                result.add(a.pos);
-                n++;
+            if (this === a) continue;
+            const distancia = this.pos.dist(a.pos);
+
+            if (distancia <= this.cohesionRadius) {
+                cohesion.add(a.pos);
+                vecinosCohesion++;
+            }
+            if (distancia <= this.alignmentRadius) {
+                alineacion.add(a.speed);
+                vecinosAlineacion++;
             }
         }
-        if (n > 0) {
-            result.div(n);
-            result.sub(this.pos);
-            result.setMag(this.cohesionRatio);
-            result.limit(this.maxSteeringForce);
-            this.addForce(result);
+
+        if (vecinosCohesion > 0) {
+            cohesion.div(vecinosCohesion);
+            cohesion.sub(this.pos);
+            cohesion.setMag(this.cohesionRatio);
+            cohesion.limit(this.maxSteeringForce);
+            this.addForce(cohesion);
         }
-    }
-    align(agents) {
-        let result = createVector(0, 0, 0);
-        let n = 0;
-        for (let a of agents) {
-            if (this != a && this.pos.dist(a.pos) <= this.alignmentRadius) {
-                result.add(a.speed);
-                n++;
-            }
-        }
-        if (n > 0) {
-            result.div(n);
-            result.mult(this.alignmentRatio);
-            result.limit(this.maxSteeringForce);
-            this.addForce(result);
+        if (vecinosAlineacion > 0) {
+            alineacion.div(vecinosAlineacion);
+            alineacion.mult(this.alignmentRatio);
+            alineacion.limit(this.maxSteeringForce);
+            this.addForce(alineacion);
         }
     }
     separate(agents) {

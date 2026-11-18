@@ -131,27 +131,25 @@ class FishSystem3D {
                 const fish = especie.beings;
                 for (let pez of fish) {
                     if (!pez.persiguiendo && !pez.huyendo) {
-                        pez.cohere(fish);
-                        pez.align(fish);
+                        pez.cohereAndAlign(fish);
                     }
                 }
             }
         }
     }
-    separate() {
-        const fish = this.getFish();
+    separate(fish = this.getFish()) {
         for (let pez of fish) {
             pez.separate(fish);
         }
     }
-    wander() {
-        for (let pez of this.getFish()) {
+    wander(fish = this.getFish()) {
+        for (let pez of fish) {
             if (!pez.persiguiendo && !pez.huyendo && !pez.buscandoAlimento) {
                 pez.wander();
             }
         }
     }
-    update() {
+    update(todosLosPeces = this.getFish()) {
         this.regenerarFitoplancton();
         const nivelPrimario = this.getTrophicLevel(1);
 
@@ -161,7 +159,6 @@ class FishSystem3D {
             }
         }
 
-        const todosLosPeces = this.getFish();
         const fitoplancton = this.getSpecie(1, "Fitoplancton");
 
         for (let nivel of this.ecosystem) {

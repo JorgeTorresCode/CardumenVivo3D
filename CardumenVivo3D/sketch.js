@@ -2,6 +2,7 @@ let fishSystem;
 
 function setup() {
     createCanvas(windowWidth - 5, windowHeight - 5, WEBGL);
+    FishDrawer.inicializarGeometrias();
     fishSystem = new FishSystem3D(2400, 2400, 1200);
 
     // (densidadMaxima, ratioAparicion %, tasaBase, minEnergia, maxEnergia)
@@ -27,7 +28,7 @@ async function cargarEspecies() {
 
         const especie = fishSystem.catalogoEspecies[0];
         if (especie) {
-            fishSystem.addMinibanco(2, especie);
+            fishSystem.addMinibanco(200, especie);
         }
 
         const depredador = fishSystem.catalogoEspecies.find(e => e.nivelTrofico >= 3);
@@ -50,10 +51,10 @@ function draw() {
     box(fishSystem.ancho, fishSystem.alto, fishSystem.depth);
     pop();
 
-    fishSystem.cohere();
-    fishSystem.align();
-    fishSystem.separate();
-    fishSystem.wander();
+    const fish = fishSystem.getFish();
+    fishSystem.cohereAndAlign();
+    fishSystem.separate(fish);
+    fishSystem.wander(fish);
 
-    fishSystem.update();
+    fishSystem.update(fish);
 }

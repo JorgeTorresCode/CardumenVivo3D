@@ -1,5 +1,5 @@
 // node --test tests/ecosystem.test.cjs
-// AJV_BUNDLE_PATH permite usar una copia local del bundle del CDN de index.html.
+// AJV_BUNDLE_PATH permite usar una copia local del bundle del CDN de sketch.html.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -25,6 +25,7 @@ class Vector {
     limit(n) { return this.mag() > n ? this.setMag(n) : this; }
     dist(v) { return this.copy().sub(v).mag(); }
     static sub(a, b) { return a.copy().sub(b); }
+    static add(a, b) { return a.copy().add(b); }
     static div(a, n) { return a.copy().div(n); }
     static dist(a, b) { return a.dist(b); }
     static random3D() { return new Vector(random(-1, 1), random(-1, 1), random(-1, 1)).normalize(); }
@@ -45,13 +46,13 @@ const contexto = vm.createContext({
     noise: () => 0.5, color: (...args) => args, FishDrawer: { display() {} },
     push() {}, pop() {}, noStroke() {}, ambientMaterial() {}, translate() {}, sphere() {}
 });
-let TrophicLevel, Specie, FishSystem3D, Fish, Fitoplancton;
+let TrophicLevel, Specie, Agent3D, FishSystem3D, Fish, Fitoplancton;
 test.before(async () => {
     let bundle;
     if (process.env.AJV_BUNDLE_PATH) {
         bundle = fs.readFileSync(process.env.AJV_BUNDLE_PATH, "utf8");
     } else {
-        const url = leer("index.html").match(/src="([^"]*\/ajv2020\.bundle\.js)"/)[1];
+        const url = leer("sketch.html").match(/src="([^"]*\/ajv2020\.bundle\.js)"/)[1];
         const respuesta = await fetch(url, { signal: AbortSignal.timeout(15000) });
         assert.ok(respuesta.ok, `HTTP ${respuesta.status} al descargar Ajv`);
         bundle = await respuesta.text();
@@ -61,8 +62,8 @@ test.before(async () => {
         "model/Agent3D.js", "model/Fish.js", "model/Fitoplancton.js", "model/FishSystem3D.js"]) {
         vm.runInContext(leer(archivo), contexto);
     }
-    ({ TrophicLevel, Specie, FishSystem3D, Fish, Fitoplancton } = vm.runInContext(
-        "({ TrophicLevel, Specie, FishSystem3D, Fish, Fitoplancton })", contexto));
+    ({ TrophicLevel, Specie, Agent3D, FishSystem3D, Fish, Fitoplancton } = vm.runInContext(
+        "({ TrophicLevel, Specie, Agent3D, FishSystem3D, Fish, Fitoplancton })", contexto));
 });
 
 test("cada nivel contiene especies y cada especie contiene sus seres", () => {
@@ -139,24 +140,26 @@ test("cohesion y alineacion agrupan por especie; separacion incluye todos los pe
     sistema.addRandomFish(1, { ...especie, nombre: "Otra especie" });
     sistema.addRandomFish(1, { ...especie, nivelTrofico: 4 });
     for (const pez of sistema.getFish()) {
-        pez.cohere = vecinos => {
+        pez.cohereAndAlign = vecinos => {
             const mismoGrupo = pez.especie.nombre === especie.nombre && pez.especie.nivelTrofico === especie.nivelTrofico;
             assert.equal(vecinos.length, mismoGrupo ? 3 : 1);
             assert.ok(vecinos.every(otro => otro.especie.nombre === pez.especie.nombre &&
                 otro.especie.nivelTrofico === pez.especie.nivelTrofico));
         };
-        pez.align = pez.cohere;
         pez.separate = vecinos => assert.equal(vecinos.length, 5);
     }
-    sistema.cohere(); sistema.align(); sistema.separate();
+    sistema.cohereAndAlign(); sistema.separate();
 });
 
 test("actualiza peces de distintos niveles durante 120 ciclos sin tratar el fitoplancton como pez", () => {
     const sistema = new FishSystem3D(1000, 1000, 1000);
-    sistema.addMinibanco(3, especie);
-    sistema.addRandomFish(2, { ...especie, nivelTrofico: 4 });
+    // Aislar movimiento de los nacimientos: este caso espera una poblacion fija.
+    const sinReproduccion = { ...especie, umbralReproduccion: especie.energiaMaxima + 1 };
+    sistema.addMinibanco(3, sinReproduccion);
+    sistema.addRandomFish(2, { ...sinReproduccion, nivelTrofico: 4 });
     for (let frame = 0; frame < 120; frame++) {
-        sistema.cohere(); sistema.align(); sistema.separate(); sistema.wander(); sistema.update();
+        const fish = sistema.getFish();
+        sistema.cohereAndAlign(); sistema.separate(fish); sistema.wander(fish); sistema.update(fish);
     }
     assert.equal(sistema.getFish().length, 5);
     for (const pez of sistema.getFish()) {
@@ -227,9 +230,9 @@ test("el arranque del sketch carga especies y crea el minibanco en ecosystem", a
     contexto.fetch = async url => ({ ok: true, json: async () => JSON.parse(leer(url)) });
     vm.runInContext(leer("sketch.js"), contexto);
     await vm.runInContext("fishSystem = sistema; cargarEspecies();", contexto);
-    assert.equal(sistema.getSpecie(especie.nivelTrofico, especie.nombre).beings.length, 10);
+    assert.equal(sistema.getSpecie(especie.nivelTrofico, especie.nombre).beings.length, 2);
     assert.equal(sistema.getSpecie(depredador.nivelTrofico, depredador.nombre).beings.length, 2);
-    assert.equal(sistema.getFish().length, 12);
+    assert.equal(sistema.getFish().length, 4);
 });
 
 test("cargas repetidas y creacion reutilizan el grupo sin perder organismos", () => {
@@ -296,7 +299,7 @@ test("un depredador con hambre se come a la presa que toca y esta se elimina", (
     assert.equal(sistema.getSpecie(especie.nivelTrofico, especie.nombre).beings.length, 0);
 });
 
-test("la presa huye en rafaga y deja de agruparse solo cuando persigue comida", () => {
+test("la presa huye en rafaga y suspende agrupacion durante huida o persecucion", () => {
     const sistema = new FishSystem3D(1000, 1000, 1000);
     const sardina = new Fish(100, 0, 0, especie);
     const jurel = new Fish(0, 0, 0, depredador); // sin hambre: no persigue
@@ -310,10 +313,89 @@ test("la presa huye en rafaga y deja de agruparse solo cuando persigue comida", 
     assert.equal(jurel.maxSpeed, depredador.velocidadBase);
 
     let cohesiones = 0;
-    sardina.cohere = () => cohesiones++;
-    sistema.cohere();
-    assert.equal(cohesiones, 1); // al huir conserva la cohesion
+    sardina.cohereAndAlign = () => cohesiones++;
+    sistema.cohereAndAlign();
+    assert.equal(cohesiones, 0);
+    sardina.huyendo = false;
+    sistema.cohereAndAlign();
+    assert.equal(cohesiones, 1);
     sardina.persiguiendo = true;
-    sistema.cohere();
-    assert.equal(cohesiones, 1); // al perseguir comida la suelta
+    sistema.cohereAndAlign();
+    assert.equal(cohesiones, 1);
+});
+
+test("cohereAndAlign conserva radios, contadores y limites independientes", () => {
+    const agente = new Agent3D(0, 0, 0, 2);
+    const cercano = new Agent3D(10, 0, 0);
+    const lejano = new Agent3D(0, 100, 0);
+    cercano.speed.set(new Vector(0, 3, 0));
+    lejano.speed.set(new Vector(100, 0, 0));
+    agente.cohesionRadius = 150;
+    agente.alignmentRadius = 20;
+    agente.cohesionRatio = 1;
+    agente.alignmentRatio = 1;
+    agente.maxSteeringForce = 0.4;
+    agente.cohereAndAlign([agente, cercano, lejano]);
+    const centro = new Vector(5, 50, 0).normalize().mult(0.2);
+    assert.ok(Math.abs(agente.acc.x - centro.x) < 1e-12);
+    assert.ok(Math.abs(agente.acc.y - centro.y - 0.2) < 1e-12);
+    assert.equal(agente.acc.z, 0);
+});
+
+test("cohereAndAlign admite alineacion mas amplia que cohesion y pesos diferentes", () => {
+    const agente = new Agent3D(0, 0, 0, 2);
+    const cercano = new Agent3D(10, 0, 0);
+    const lejano = new Agent3D(0, 100, 0);
+    cercano.speed.set(new Vector(0, 2, 0));
+    lejano.speed.set(new Vector(0, 4, 0));
+    agente.cohesionRadius = 20;
+    agente.alignmentRadius = 150;
+    agente.cohesionRatio = 0.2;
+    agente.alignmentRatio = 0.1;
+    agente.maxSteeringForce = 10;
+    agente.cohereAndAlign([agente, cercano, lejano]);
+    assert.ok(Math.abs(agente.acc.x - 0.1) < 1e-12);
+    assert.ok(Math.abs(agente.acc.y - 0.15) < 1e-12);
+});
+
+test("cohereAndAlign calcula una distancia por vecino y omite al propio agente", () => {
+    const agente = new Agent3D(0, 0, 0);
+    const vecinos = [agente, new Agent3D(1000, 0, 0), new Agent3D(0, 1000, 0)];
+    const distancia = agente.pos.dist.bind(agente.pos);
+    let consultas = 0;
+    agente.pos.dist = posicion => { consultas++; return distancia(posicion); };
+    agente.cohereAndAlign(vecinos);
+    assert.equal(consultas, 2);
+    assert.equal(agente.acc.magSq(), 0);
+    agente.cohereAndAlign([]);
+    assert.equal(agente.acc.magSq(), 0);
+});
+
+test("draw construye una lista por fotograma y la comparte con todos los recorridos globales", () => {
+    const sistema = new FishSystem3D(1000, 1000, 1000);
+    sistema.addRandomFish(2, especie);
+    let construcciones = 0;
+    const getFish = sistema.getFish.bind(sistema);
+    let lista;
+    sistema.getFish = () => { construcciones++; lista = getFish(); return lista; };
+    for (const metodo of ["separate", "wander", "update"]) {
+        const original = sistema[metodo].bind(sistema);
+        sistema[metodo] = peces => { assert.equal(peces, lista); return original(peces); };
+    }
+    for (const pez of getFish()) {
+        const percibir = pez.percibir.bind(pez);
+        pez.percibir = peces => { assert.equal(peces, lista); return percibir(peces); };
+    }
+    for (const funcion of ["background", "orbitControl", "lights", "stroke", "noFill", "box"]) {
+        contexto[funcion] = () => {};
+    }
+    contexto.sistema = sistema;
+    vm.runInContext("fishSystem = sistema; draw();", contexto);
+    assert.equal(construcciones, 1);
+    const anterior = lista;
+    sistema.addRandomFish(1, especie);
+    vm.runInContext("draw();", contexto);
+    assert.equal(construcciones, 2);
+    assert.notEqual(lista, anterior);
+    assert.equal(lista.length, 3);
 });

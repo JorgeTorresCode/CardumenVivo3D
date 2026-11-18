@@ -1,4 +1,25 @@
 class FishDrawer {
+    static inicializarGeometrias() {
+        if (this.aletas) return;
+
+        const formas = {
+            cola: [[0, 0, 0], [-30, -23, 0], [-30, 23, 0]],
+            dorsal: [[13, -14, 0], [-8, -43, 0], [-19, -14, 0]],
+            lateralIzquierda: [[14, 5, 9], [-20, 10, 39], [-15, 5, 9]],
+            lateralDerecha: [[14, 5, -9], [-15, 5, -9], [-20, 10, -39]],
+        };
+
+        this.aletas = {};
+        push();
+        noStroke();
+        for (const [nombre, puntos] of Object.entries(formas)) {
+            const geometria = buildGeometry(() => this.dibujarAleta(puntos, 0.5));
+            // El color se aplica al dibujar cada pez, no queda fijado en la malla.
+            geometria.clearColors();
+            this.aletas[nombre] = geometria;
+        }
+        pop();
+    }
     static display(esDepredador, pez) {
         push();
         this.aplicarTransformacion(pez);
@@ -39,7 +60,7 @@ class FishDrawer {
         translate(-34, 0, 0);
         rotateY(Math.sin(fase) * amplitud);
         ambientMaterial(pez.especie.color);
-        this.dibujarAleta([[0, 0, 0], [-30, -23, 0], [-30, 23, 0]], 0.5);
+        model(this.aletas.cola);
         pop();
     }
     static dibujarOjos(pez) {
@@ -55,12 +76,12 @@ class FishDrawer {
     }
     static dibujarAletaDorsal(pez) {
         ambientMaterial(pez.especie.color);
-        this.dibujarAleta([[13, -14, 0], [-8, -43, 0], [-19, -14, 0]], 0.5);
+        model(this.aletas.dorsal);
     }
     static dibujarAletasLaterales(pez) {
         ambientMaterial(pez.especie.color);
-        this.dibujarAleta([[14, 5, 9], [-20, 10, 39], [-15, 5, 9]], 0.5);
-        this.dibujarAleta([[14, 5, -9], [-15, 5, -9], [-20, 10, -39]], 0.5);
+        model(this.aletas.lateralIzquierda);
+        model(this.aletas.lateralDerecha);
     }
     static dibujarAleta(puntos, grosor) {
         const triangulo = puntos.map(([x, y, z]) => createVector(x, y, z));
