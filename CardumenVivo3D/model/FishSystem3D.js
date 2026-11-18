@@ -94,10 +94,11 @@ class FishSystem3D {
         );
         this.getSpecie(1, "Fitoplancton").addBeing(fito);
     }
-    eliminarFitoplancton(fito, especie = this.getSpecie(1, "Fitoplancton")) {
-        let indice = especie.beings.indexOf(fito);
+    eliminarFitoplancton(fito) {
+        const productores = this.getFitoplancton();
+        let indice = productores.indexOf(fito);
         if (indice !== -1) {
-            especie.beings.splice(indice, 1);
+            productores.splice(indice, 1);
         }
     }
     regenerarFitoplancton(dt) {
@@ -123,10 +124,11 @@ class FishSystem3D {
         }
     }
     cohereAndAlign() {
+        const fitoplancton = this.getSpecie(1, "Fitoplancton");
         for (let nivel of this.ecosystem) {
-            if (nivel.level === 1) continue;
             for (let especie of nivel.especies) {
-                const fish = especie.beings;
+                if (especie === fitoplancton) continue;
+                const fish = especie.beings.filter(pez => !pez.isDead());
                 for (let pez of fish) {
                     if (!pez.persiguiendo && !pez.huyendo) {
                         pez.cohereAndAlign(fish);
@@ -148,50 +150,47 @@ class FishSystem3D {
         }
     }
     simular(dt) {
-        const fish = this.getFish();
-        this.cohereAndAlign();
-        this.separate(fish);
-        this.wander(fish);
-        this.update(fish, dt);
+        this.update(this.getFish(), dt);
     }
     update(todosLosPeces = this.getFish(), dt = 1 / 60) {
         this.regenerarFitoplancton(dt);
-        const nivelPrimario = this.getTrophicLevel(1);
         const fitoplancton = this.getSpecie(1, "Fitoplancton");
+
+        // Resolver la conducta del paso antes de aplicar las fuerzas de cardumen.
+        for (const pez of todosLosPeces) {
+            if (pez.isDead()) continue;
+            pez.reiniciarEstado();
+            const { amenaza, presa } = pez.percibir(todosLosPeces);
+            if (amenaza) {
+                pez.huir(amenaza);
+            } else if (presa) {
+                pez.cazar(presa);
+            } else {
+                const consumido = pez.buscarYComerFitoplancton(fitoplancton.beings);
+                if (consumido) this.eliminarFitoplancton(consumido);
+            }
+        }
+
+        const vivos = todosLosPeces.filter(pez => !pez.isDead());
+        this.cohereAndAlign();
+        this.separate(vivos);
+        this.wander(vivos);
 
         for (let nivel of this.ecosystem) {
             for (let especie of nivel.especies) {
                 if (especie === fitoplancton) continue;
                 const fish = especie.beings;
-                for (let i = 0; i < fish.length; i++) {
-                    const pez = fish[i];
-                    if (pez.isDead()) {
-                        fish.splice(i, 1);
-                        i--;
-                        continue;
-                    }
-                    
-                    pez.reiniciarEstado();
-                    let { amenaza, presa } = pez.percibir(todosLosPeces);
-
-                    if (amenaza !== null) {
-                        pez.huir(amenaza);
-                    } else if (presa !== null) {
-                        pez.cazar(presa);
-                    } else {
-                        let consumo = pez.buscarYComerFitoplancton(nivelPrimario);
-                        if (consumo !== null) {
-                            this.eliminarFitoplancton(consumo.fito, consumo.especie);
-                        }
-                    }
-
+                const crias = [];
+                for (const pez of fish) {
+                    if (pez.isDead()) continue;
                     pez.update(this.ancho, this.alto, this.depth, dt);
-
-                    let cria = pez.intentarReproducirse(fish);
-                    if (cria !== null) {
-                        especie.addBeing(cria);
-                    }
+                    const cria = pez.intentarReproducirse(fish);
+                    if (cria) crias.push(cria);
                 }
+                for (let i = fish.length - 1; i >= 0; i--) {
+                    if (fish[i].isDead()) fish.splice(i, 1);
+                }
+                for (const cria of crias) especie.addBeing(cria);
             }
         }
     }

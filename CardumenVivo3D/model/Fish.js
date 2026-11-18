@@ -122,23 +122,19 @@ class Fish extends Agent3D {
         }
     }
 
-    buscarYComerFitoplancton(nivelPrimario) {
-        if (!nivelPrimario || !this.puedeComerFitoplancton() || !this.tieneHambre()) {
+    buscarYComerFitoplancton(productores) {
+        if (!this.puedeComerFitoplancton() || !this.tieneHambre()) {
             return null;
         }
 
         let fitoMasCercano = null;
-        let especieObjetivo = null;
         let distMinima = this.especie.radioPercepcion;
 
-        for (let especie of nivelPrimario.especies) {
-            for (let f of especie.beings) {
-                let d = this.pos.dist(f.pos);
-                if (d < distMinima) {
-                    distMinima = d;
-                    fitoMasCercano = f;
-                    especieObjetivo = especie;
-                }
+        for (const fito of productores) {
+            const distancia = this.pos.dist(fito.pos);
+            if (distancia < distMinima) {
+                distMinima = distancia;
+                fitoMasCercano = fito;
             }
         }
 
@@ -149,7 +145,7 @@ class Fish extends Agent3D {
             if (distMinima <= radioContacto) {
                 let energiaGanada = fitoMasCercano.energia * this.especie.eficienciaAsimilacion;
                 this.energia = Math.min(this.especie.energiaMaxima, this.energia + energiaGanada);
-                return { fito: fitoMasCercano, especie: especieObjetivo };
+                return fitoMasCercano;
             } else {
                 let offset = p5.Vector.random3D().mult(fitoMasCercano.r * 0.8);
                 this.seek(p5.Vector.add(fitoMasCercano.pos, offset));

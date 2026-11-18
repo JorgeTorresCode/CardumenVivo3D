@@ -4,6 +4,13 @@
   "description": "Atributos cuantitativos que configuran una especie de pez.",
   "type": "object",
   "additionalProperties": false,
+  "$comment": "El nombre Fitoplancton en el nivel 1 identifica al grupo productor.",
+  "not": {
+    "properties": {
+      "nombre": { "const": "Fitoplancton" },
+      "nivelTrofico": { "const": 1 }
+    }
+  },
   "required": [
     "nombre",
     "color",
