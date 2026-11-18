@@ -190,7 +190,7 @@ class FishSystem3D {
                 for (const pez of fish) {
                     if (pez.isDead()) continue;
                     pez.update(this.ancho, this.alto, this.depth, dt);
-                    const cria = pez.intentarReproducirse(fish);
+                    const cria = pez.intentarReproducirse(fish, dt);
                     if (cria) crias.push(cria);
                 }
                 for (let i = fish.length - 1; i >= 0; i--) {

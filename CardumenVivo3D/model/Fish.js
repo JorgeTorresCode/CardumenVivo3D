@@ -155,13 +155,12 @@ class Fish extends Agent3D {
         return !this.isDead() && !this.huyendo && this.energia >= this.especie.umbralReproduccion;
     }
 
-    intentarReproducirse(companerosEspecie) {
+    intentarReproducirse(companerosEspecie, dt) {
         if (!this.puedeReproducirse()) {
             return null;
         }
 
-        let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
-        let probFrame = Fish.PROBABILIDAD_REPRODUCCION * dt;
+        const probabilidadPorPaso = Fish.PROBABILIDAD_REPRODUCCION * dt;
         let costoPorPadre = this.especie.energiaInicial * 0.5;
 
         for (let otro of companerosEspecie) {
@@ -171,7 +170,7 @@ class Fish extends Agent3D {
 
             let radioEncuentro = (this.r + otro.r) * 2.5;
             if (this.pos.dist(otro.pos) <= radioEncuentro) {
-                if (random() >= probFrame) {
+                if (random() >= probabilidadPorPaso) {
                     continue;
                 }
 
