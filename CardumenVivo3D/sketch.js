@@ -1,4 +1,6 @@
 let fishSystem;
+const paso = 1 / 60;
+let acumulado = 0;
 
 function setup() {
     createCanvas(windowWidth - 5, windowHeight - 5, WEBGL);
@@ -28,7 +30,7 @@ async function cargarEspecies() {
 
         const especie = fishSystem.catalogoEspecies[0];
         if (especie) {
-            fishSystem.addMinibanco(200, especie);
+            fishSystem.addMinibanco(100, especie);
         }
 
         const depredador = fishSystem.catalogoEspecies.find(e => e.nivelTrofico >= 3);
@@ -41,6 +43,13 @@ async function cargarEspecies() {
 }
 
 function draw() {
+    // Recuperar como maximo 0.1 s tras una pausa; descartar el exceso.
+    acumulado += Math.min(Math.max(0, deltaTime / 1000), 0.1);
+    while (acumulado >= paso) {
+        fishSystem.simular(paso);
+        acumulado -= paso;
+    }
+
     background(20, 40, 60);
     orbitControl();
     lights();
@@ -51,10 +60,5 @@ function draw() {
     box(fishSystem.ancho, fishSystem.alto, fishSystem.depth);
     pop();
 
-    const fish = fishSystem.getFish();
-    fishSystem.cohereAndAlign();
-    fishSystem.separate(fish);
-    fishSystem.wander(fish);
-
-    fishSystem.update(fish);
+    fishSystem.display();
 }

@@ -14,7 +14,7 @@ class Fish extends Agent3D {
         this.energia = especie.energiaInicial;
         this.maxSpeed = especie.velocidadBase;
 
-        // Estados que se recalculan en cada frame
+        // Estados que se recalculan en cada paso de simulacion
         this.persiguiendo = false;
         this.huyendo = false;
         this.buscandoAlimento = false;
@@ -194,8 +194,7 @@ class Fish extends Agent3D {
         return null;
     }
 
-    actualizarEnergia() {
-        let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
+    actualizarEnergia(dt) {
         let gastoBasal = this.especie.costoMetabolicoBase * dt;
         let gastoMovimiento = this.especie.costoLocomocion * this.speed.magSq() * dt;
 
@@ -207,11 +206,11 @@ class Fish extends Agent3D {
         return this.energia <= 0;
     }
 
-    update(ancho, alto, profundidad) {
+    update(ancho, alto, profundidad, dt) {
         super.update(ancho, alto, profundidad);
-        this.actualizarEnergia();
+        this.actualizarEnergia(dt);
 
-        this.tiempoCola += Math.max(0, deltaTime / 1000);
+        this.tiempoCola += dt;
         if (this.speed.magSq() > 0.000001) {
             this.direccionAnterior.set(this.speed).normalize();
         }

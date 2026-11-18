@@ -100,7 +100,7 @@ class FishSystem3D {
             especie.beings.splice(indice, 1);
         }
     }
-    regenerarFitoplancton() {
+    regenerarFitoplancton(dt) {
         let K = this.getCapacidadCarga();
         let N = this.getFitoplancton().length;
         let ratio = constrain(this.ratioAparicion, 0, 1);
@@ -108,8 +108,6 @@ class FishSystem3D {
         if (N >= K || ratio <= 0) {
             return;
         }
-
-        let dt = Math.min(Math.max(0, deltaTime / 1000), 0.1);
 
         // dN/dt = r_base * ratio * (K - N)
         let dN = this.tasaBaseRegeneracion * ratio * (K - N) * dt;
@@ -149,16 +147,16 @@ class FishSystem3D {
             }
         }
     }
-    update(todosLosPeces = this.getFish()) {
-        this.regenerarFitoplancton();
+    simular(dt) {
+        const fish = this.getFish();
+        this.cohereAndAlign();
+        this.separate(fish);
+        this.wander(fish);
+        this.update(fish, dt);
+    }
+    update(todosLosPeces = this.getFish(), dt = 1 / 60) {
+        this.regenerarFitoplancton(dt);
         const nivelPrimario = this.getTrophicLevel(1);
-
-        for (let especie of nivelPrimario.especies) {
-            for (let fito of especie.beings) {
-                fito.display();
-            }
-        }
-
         const fitoplancton = this.getSpecie(1, "Fitoplancton");
 
         for (let nivel of this.ecosystem) {
@@ -187,14 +185,21 @@ class FishSystem3D {
                         }
                     }
 
-                    pez.update(this.ancho, this.alto, this.depth);
+                    pez.update(this.ancho, this.alto, this.depth, dt);
 
                     let cria = pez.intentarReproducirse(fish);
                     if (cria !== null) {
                         especie.addBeing(cria);
                     }
-
-                    pez.display();
+                }
+            }
+        }
+    }
+    display() {
+        for (let nivel of this.ecosystem) {
+            for (let especie of nivel.especies) {
+                for (let ser of especie.beings) {
+                    ser.display();
                 }
             }
         }
