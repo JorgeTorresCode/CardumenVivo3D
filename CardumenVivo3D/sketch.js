@@ -27,7 +27,11 @@ async function cargarSimulacion() {
             config = await Configuracion.cargarArchivos();
         }
         fishSystem = crearSistema(config, esquema);
+        panel.registrar(0, fishSystem.obtenerPoblaciones());
+        document.getElementById("estado").hidden = true;
+        escenarioListo = true;
     } catch (error) {
+        document.getElementById("estado").textContent = "No se pudo cargar la configuración.";
         console.error("No se pudo cargar la configuracion:", error);
     }
 }
