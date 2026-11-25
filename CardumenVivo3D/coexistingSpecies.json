@@ -1,0 +1,251 @@
+{
+  "sistema": {
+    "caja": {
+      "ancho": 1000,
+      "alto": 700,
+      "profundidad": 1000
+    },
+    "fitoplancton": {
+      "densidadMaxima": 0.2,
+      "ratioAparicionPorcentaje": 50,
+      "tasaBase": 0.08,
+      "minEnergia": 1,
+      "maxEnergia": 10
+    }
+  },
+  "especies": [
+    {
+      "nombre": "Sardina del Pacifico (Sardinops sagax)",
+      "color": [170, 195, 210],
+      "nivelTrofico": 2.5,
+      "espectroTrofico": [1, 2],
+      "tamano": 1,
+      "radioPercepcion": 120,
+      "velocidadBase": 1.35,
+      "velocidadRafaga": 3.6,
+      "energiaMaxima": 55,
+      "energiaInicial": 30,
+      "umbralHambre": 46,
+      "umbralReproduccion": 42,
+      "eficienciaAsimilacion": 0.7,
+      "costoMetabolicoBase": 0.32,
+      "costoLocomocion": 0.025
+    },
+    {
+      "nombre": "Jurel (Trachurus murphyi)",
+      "color": [90, 110, 150],
+      "nivelTrofico": 3.5,
+      "espectroTrofico": [2, 3],
+      "tamano": 2.5,
+      "radioPercepcion": 500,
+      "velocidadBase": 1.7,
+      "velocidadRafaga": 3.8,
+      "energiaMaxima": 125,
+      "energiaInicial": 60,
+      "umbralHambre": 82,
+      "umbralReproduccion": 83,
+      "eficienciaAsimilacion": 0.8,
+      "costoMetabolicoBase": 0.5,
+      "costoLocomocion": 0.016
+    }
+  ],
+  "poblacion": {
+    "Sardina del Pacifico (Sardinops sagax)": {
+      "bancos": 4,
+      "individuosPorBanco": 6
+    },
+    "Jurel (Trachurus murphyi)": {
+      "bancos": 2,
+      "individuosPorBanco": 2
+    }
+  },
+  "alternativas": [
+    {
+      "sistema": {
+        "caja": {
+          "ancho": 2400,
+          "alto": 1200,
+          "profundidad": 2400
+        },
+        "fitoplancton": {
+          "densidadMaxima": 0.05,
+          "ratioAparicionPorcentaje": 50,
+          "tasaBase": 0.08,
+          "minEnergia": 1,
+          "maxEnergia": 10
+        }
+      },
+      "especies": [
+        {
+          "nombre": "Sardina del Pacifico (Sardinops sagax)",
+          "color": [170, 195, 210],
+          "nivelTrofico": 2.5,
+          "espectroTrofico": [1, 2],
+          "tamano": 1,
+          "radioPercepcion": 275,
+          "velocidadBase": 1.25,
+          "velocidadRafaga": 5,
+          "energiaMaxima": 44,
+          "energiaInicial": 22,
+          "umbralHambre": 39,
+          "umbralReproduccion": 19,
+          "eficienciaAsimilacion": 0.7,
+          "costoMetabolicoBase": 0.17,
+          "costoLocomocion": 0.025
+        },
+        {
+          "nombre": "Jurel (Trachurus murphyi)",
+          "color": [90, 110, 150],
+          "nivelTrofico": 3.5,
+          "espectroTrofico": [2, 3],
+          "tamano": 2.5,
+          "radioPercepcion": 95,
+          "velocidadBase": 1.5,
+          "velocidadRafaga": 2.9,
+          "energiaMaxima": 120,
+          "energiaInicial": 76,
+          "umbralHambre": 62,
+          "umbralReproduccion": 80,
+          "eficienciaAsimilacion": 0.88,
+          "costoMetabolicoBase": 0.18,
+          "costoLocomocion": 0.012
+        }
+      ],
+      "poblacion": {
+        "Sardina del Pacifico (Sardinops sagax)": {
+          "bancos": 5,
+          "individuosPorBanco": 5
+        },
+        "Jurel (Trachurus murphyi)": {
+          "bancos": 2,
+          "individuosPorBanco": 2
+        }
+      }
+    },
+    {
+      "sistema": {
+        "caja": {
+          "ancho": 1450,
+          "alto": 850,
+          "profundidad": 1450
+        },
+        "fitoplancton": {
+          "densidadMaxima": 0.085,
+          "ratioAparicionPorcentaje": 72,
+          "tasaBase": 0.115,
+          "minEnergia": 4,
+          "maxEnergia": 14
+        }
+      },
+      "especies": [
+        {
+          "nombre": "Damisela azul (Chrysiptera cyanea)",
+          "color": [34, 123, 255],
+          "nivelTrofico": 2.5,
+          "espectroTrofico": [1, 2],
+          "tamano": 0.68,
+          "radioPercepcion": 220,
+          "velocidadBase": 1.45,
+          "velocidadRafaga": 4.8,
+          "energiaMaxima": 59,
+          "energiaInicial": 38,
+          "umbralHambre": 51,
+          "umbralReproduccion": 39,
+          "eficienciaAsimilacion": 0.88,
+          "costoMetabolicoBase": 0.115,
+          "costoLocomocion": 0.012
+        },
+        {
+          "nombre": "Cirujano amarillo (Zebrasoma flavescens)",
+          "color": [255, 218, 32],
+          "nivelTrofico": 2,
+          "espectroTrofico": [1, 1],
+          "tamano": 1,
+          "radioPercepcion": 230,
+          "velocidadBase": 1.55,
+          "velocidadRafaga": 4,
+          "energiaMaxima": 95,
+          "energiaInicial": 78,
+          "umbralHambre": 69,
+          "umbralReproduccion": 71,
+          "eficienciaAsimilacion": 0.82,
+          "costoMetabolicoBase": 0.1,
+          "costoLocomocion": 0.016
+        },
+        {
+          "nombre": "Pez loro de barras azules (Scarus ghobban)",
+          "color": [28, 211, 171],
+          "nivelTrofico": 2,
+          "espectroTrofico": [1, 1],
+          "tamano": 1.5,
+          "radioPercepcion": 260,
+          "velocidadBase": 1.45,
+          "velocidadRafaga": 3.8,
+          "energiaMaxima": 120,
+          "energiaInicial": 96,
+          "umbralHambre": 88,
+          "umbralReproduccion": 92,
+          "eficienciaAsimilacion": 0.85,
+          "costoMetabolicoBase": 0.115,
+          "costoLocomocion": 0.017
+        },
+        {
+          "nombre": "Mero leopardo (Plectropomus leopardus)",
+          "color": [246, 83, 48],
+          "nivelTrofico": 4.4,
+          "espectroTrofico": [2, 3.9],
+          "tamano": 1.75,
+          "radioPercepcion": 230,
+          "velocidadBase": 1.75,
+          "velocidadRafaga": 3.85,
+          "energiaMaxima": 145,
+          "energiaInicial": 112,
+          "umbralHambre": 77,
+          "umbralReproduccion": 105,
+          "eficienciaAsimilacion": 0.83,
+          "costoMetabolicoBase": 0.11,
+          "costoLocomocion": 0.011
+        },
+        {
+          "nombre": "Sardina del Pacifico (Sardinops sagax)",
+          "color": [170, 195, 210],
+          "nivelTrofico": 2.5,
+          "espectroTrofico": [1, 2],
+          "tamano": 0.82,
+          "radioPercepcion": 225,
+          "velocidadBase": 1.45,
+          "velocidadRafaga": 4.8,
+          "energiaMaxima": 80,
+          "energiaInicial": 53,
+          "umbralHambre": 61,
+          "umbralReproduccion": 56,
+          "eficienciaAsimilacion": 0.88,
+          "costoMetabolicoBase": 0.135,
+          "costoLocomocion": 0.012
+        }
+      ],
+      "poblacion": {
+        "Damisela azul (Chrysiptera cyanea)": {
+          "bancos": 5,
+          "individuosPorBanco": 4
+        },
+        "Cirujano amarillo (Zebrasoma flavescens)": {
+          "bancos": 3,
+          "individuosPorBanco": 4
+        },
+        "Pez loro de barras azules (Scarus ghobban)": {
+          "bancos": 2,
+          "individuosPorBanco": 5
+        },
+        "Mero leopardo (Plectropomus leopardus)": {
+          "bancos": 2,
+          "individuosPorBanco": 2
+        },
+        "Sardina del Pacifico (Sardinops sagax)": {
+          "bancos": 3,
+          "individuosPorBanco": 4
+        }
+      }
+    }
+  ]
+}
