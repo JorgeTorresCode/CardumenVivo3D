@@ -70,12 +70,37 @@ async function iniciar() {
             ? "Configuracion guardada en este navegador."
             : "Valores por defecto de data/config.json y data/species.json.");
         dibujarTodo();
+        await cargarDemostraciones();
     } catch (error) {
         console.error(error);
         const aviso = $("errorCarga");
         aviso.textContent = "No se pudo cargar la configuracion. Abre el proyecto con un servidor local " +
             "(por ejemplo Live Server) en lugar de abrir el archivo directamente. Detalle: " + error.message;
         aviso.hidden = false;
+    }
+}
+
+async function cargarDemostraciones() {
+    const contenedor = $("botonesDemostracion");
+    try {
+        const respuesta = await fetch("coexistingSpecies.json");
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        const principal = await respuesta.json();
+        for (const escenario of [principal, ...principal.alternativas]) {
+            const boton = crearElemento("button", "boton", escenario.nombre);
+            boton.type = "button";
+            boton.addEventListener("click", () => {
+                config = Configuracion.crear(escenario.sistema, escenario.especies, escenario.poblacion);
+                dibujarTodo();
+                mostrarEstado(Configuracion.guardar(config)
+                    ? `Demostración cargada: ${escenario.nombre}.`
+                    : "Demostración cargada, pero no se pudo guardar en este navegador.");
+            });
+            contenedor.append(boton);
+        }
+    } catch (error) {
+        console.error(error);
+        contenedor.textContent = "No se pudieron cargar las demostraciones.";
     }
 }
 
